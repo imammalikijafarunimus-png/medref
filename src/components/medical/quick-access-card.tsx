@@ -33,29 +33,29 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const colorMap: Record<string, { bg: string; text: string; border: string }> = {
   blue: {
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
-    text: 'text-blue-600 dark:text-blue-400',
-    border: 'hover:border-blue-300 dark:hover:border-blue-700',
+    bg: 'bg-sky-50 dark:bg-sky-950/30',
+    text: 'text-sky-600 dark:text-sky-400',
+    border: 'hover:border-sky-300 dark:hover:border-sky-700',
   },
   orange: {
-    bg: 'bg-orange-50 dark:bg-orange-950/30',
-    text: 'text-orange-600 dark:text-orange-400',
-    border: 'hover:border-orange-300 dark:hover:border-orange-700',
+    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    text: 'text-amber-600 dark:text-amber-400',
+    border: 'hover:border-amber-300 dark:hover:border-amber-700',
   },
   red: {
-    bg: 'bg-red-50 dark:bg-red-950/30',
-    text: 'text-red-600 dark:text-red-400',
-    border: 'hover:border-red-300 dark:hover:border-red-700',
+    bg: 'bg-rose-50 dark:bg-rose-950/30',
+    text: 'text-rose-600 dark:text-rose-400',
+    border: 'hover:border-rose-300 dark:hover:border-rose-700',
   },
   green: {
-    bg: 'bg-green-50 dark:bg-green-950/30',
-    text: 'text-green-600 dark:text-green-400',
-    border: 'hover:border-green-300 dark:hover:border-green-700',
+    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    border: 'hover:border-emerald-300 dark:hover:border-emerald-700',
   },
   purple: {
-    bg: 'bg-purple-50 dark:bg-purple-950/30',
-    text: 'text-purple-600 dark:text-purple-400',
-    border: 'hover:border-purple-300 dark:hover:border-purple-700',
+    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    text: 'text-violet-600 dark:text-violet-400',
+    border: 'hover:border-violet-300 dark:hover:border-violet-700',
   },
   teal: {
     bg: 'bg-teal-50 dark:bg-teal-950/30',
@@ -76,29 +76,29 @@ export function QuickAccessCard({
   const colors = colorMap[color] || colorMap.blue;
 
   return (
-    <Link href={href} className="block">
+    <Link href={href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg">
       <Card className={cn(
-        'transition-all duration-200 hover:shadow-md cursor-pointer',
+        'transition-all duration-200 hover:shadow-md active:scale-[0.98] cursor-pointer h-full',
         colors.border
       )}>
-        <CardContent className="p-4">
+        <CardContent className="p-4 sm:p-5">
           <div className="flex items-start justify-between">
-            <div className={cn('p-2.5 rounded-xl', colors.bg)}>
-              <Icon className={cn('h-5 w-5', colors.text)} />
+            <div className={cn('p-2.5 sm:p-3 rounded-xl', colors.bg)}>
+              <Icon className={cn('h-5 w-5 sm:h-6 sm:w-6', colors.text)} />
             </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+            <ChevronRight className="h-5 w-5 text-muted-foreground/30" />
           </div>
           
-          <h3 className="font-semibold mt-3">{title}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          <h3 className="font-semibold mt-3 text-base sm:text-lg">{title}</h3>
+          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{description}</p>
           
           {count !== undefined && (
             <div className={cn(
-              'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-3',
+              'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium mt-3',
               colors.bg,
               colors.text
             )}>
-              {count} item
+              {count.toLocaleString('id-ID')} item
             </div>
           )}
         </CardContent>

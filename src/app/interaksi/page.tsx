@@ -37,9 +37,9 @@ const warnaSeverity: Record<string, { bg: string; border: string; text: string }
     text: 'text-amber-700 dark:text-amber-400',
   },
   minor: {
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
-    border: 'border-blue-200 dark:border-blue-900',
-    text: 'text-blue-700 dark:text-blue-400',
+    bg: 'bg-sky-50 dark:bg-sky-950/30',
+    border: 'border-sky-200 dark:border-sky-900',
+    text: 'text-sky-700 dark:text-sky-400',
   },
 };
 
@@ -77,7 +77,6 @@ export default function InteraksiPage() {
     async function checkInteractions() {
       setLoading(true);
       try {
-        // Cek interaksi antara semua kombinasi obat yang dipilih
         const drugIds = selectedDrugs.map((d) => d.id);
         const results: Interaction[] = [];
 
@@ -125,14 +124,15 @@ export default function InteraksiPage() {
   const minorCount = interactions.filter((i) => i.interactionType?.toLowerCase() === 'minor').length;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/30">
-          <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+        <div className="p-2.5 sm:p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 shrink-0">
+          <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-rose-600 dark:text-rose-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Cek Interaksi Obat</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">Cek Interaksi Obat</h1>
+          <p className="text-sm text-muted-foreground">
             Periksa interaksi antara obat-obatan
           </p>
         </div>
@@ -140,10 +140,10 @@ export default function InteraksiPage() {
 
       {/* Drug Selector */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Pilih Obat</CardTitle>
+        <CardHeader className="pb-3 px-4 sm:px-6">
+          <CardTitle className="text-sm sm:text-base">Pilih Obat</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-4 sm:px-6">
           {/* Selected Drugs */}
           {selectedDrugs.length > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -151,12 +151,13 @@ export default function InteraksiPage() {
                 <Badge
                   key={drug.id}
                   variant="secondary"
-                  className="px-3 py-1 text-sm"
+                  className="px-3 py-1.5 text-sm gap-1"
                 >
-                  {drug.name}
+                  <span className="truncate max-w-[120px] sm:max-w-none">{drug.name}</span>
                   <button
                     onClick={() => removeDrug(drug.id)}
-                    className="ml-2 hover:text-red-500"
+                    className="ml-1 hover:text-rose-500 transition-colors"
+                    aria-label={`Hapus ${drug.name}`}
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -176,7 +177,7 @@ export default function InteraksiPage() {
                 setShowDropdown(e.target.value.length > 0);
               }}
               onFocus={() => setShowDropdown(searchQuery.length > 0)}
-              className="pl-10"
+              className="pl-10 h-11"
             />
 
             {/* Dropdown */}
@@ -185,25 +186,25 @@ export default function InteraksiPage() {
                 {filteredDrugs.slice(0, 10).map((drug) => (
                   <button
                     key={drug.id}
-                    className="w-full px-4 py-2 text-left hover:bg-muted/50 transition-colors flex items-center justify-between"
+                    className="w-full px-4 py-3 text-left hover:bg-muted/50 transition-colors flex items-center justify-between gap-2"
                     onClick={() => addDrug(drug)}
                   >
-                    <div>
-                      <span className="font-medium">{drug.name}</span>
+                    <div className="min-w-0">
+                      <span className="font-medium text-sm">{drug.name}</span>
                       {drug.genericName && (
-                        <span className="text-muted-foreground ml-2">
+                        <span className="text-muted-foreground ml-2 text-xs sm:text-sm">
                           ({drug.genericName})
                         </span>
                       )}
                     </div>
-                    <Plus className="h-4 w-4 text-muted-foreground" />
+                    <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Pilih minimal 2 obat untuk memeriksa interaksi
           </p>
         </CardContent>
@@ -213,19 +214,19 @@ export default function InteraksiPage() {
       {selectedDrugs.length >= 2 && (
         <div className="space-y-4">
           {/* Stats */}
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-2">
             {majorCount > 0 && (
-              <Badge className="bg-red-100 text-red-700">
+              <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
                 {majorCount} Mayor
               </Badge>
             )}
             {moderateCount > 0 && (
-              <Badge className="bg-amber-100 text-amber-700">
+              <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                 {moderateCount} Moderat
               </Badge>
             )}
             {minorCount > 0 && (
-              <Badge className="bg-blue-100 text-blue-700">
+              <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400">
                 {minorCount} Minor
               </Badge>
             )}
@@ -234,49 +235,51 @@ export default function InteraksiPage() {
           {loading ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground">Memeriksa interaksi...</p>
+                <div className="animate-pulse">
+                  <div className="h-4 w-32 bg-muted rounded mx-auto" />
+                </div>
               </CardContent>
             </Card>
           ) : interactions.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {interactions.map((interaction) => {
                 const severity = interaction.interactionType?.toLowerCase() || 'minor';
                 const colors = warnaSeverity[severity] || warnaSeverity.minor;
 
                 return (
                   <Card key={interaction.id} className={cn(colors.border)}>
-                    <CardContent className="p-4">
+                    <CardContent className="p-3 sm:p-4">
                       <div className="flex items-start gap-3">
-                        <div className={cn('p-2 rounded-lg', colors.bg)}>
-                          <AlertTriangle className={cn('h-5 w-5', colors.text)} />
+                        <div className={cn('p-2 rounded-lg shrink-0', colors.bg)}>
+                          <AlertTriangle className={cn('h-4 w-4 sm:h-5 sm:w-5', colors.text)} />
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-medium">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
+                            <span className="font-medium text-sm sm:text-base">
                               {interaction.drugA.name}
                             </span>
                             <span className="text-muted-foreground">+</span>
-                            <span className="font-medium">
+                            <span className="font-medium text-sm sm:text-base">
                               {interaction.drugB.name}
                             </span>
-                            <Badge className={cn('ml-auto', colors.bg, colors.text)}>
+                            <Badge className={cn('ml-auto text-[10px] sm:text-xs', colors.bg, colors.text)}>
                               {severity.charAt(0).toUpperCase() + severity.slice(1)}
                             </Badge>
                           </div>
 
                           {interaction.effect && (
-                            <p className="text-sm mb-2">{interaction.effect}</p>
+                            <p className="text-xs sm:text-sm mb-2">{interaction.effect}</p>
                           )}
 
                           {interaction.mechanism && (
-                            <div className="text-sm text-muted-foreground mb-2">
+                            <div className="text-xs sm:text-sm text-muted-foreground mb-2">
                               <span className="font-medium">Mekanisme:</span>{' '}
                               {interaction.mechanism}
                             </div>
                           )}
 
                           {interaction.management && (
-                            <div className="p-3 rounded-lg bg-muted/50 text-sm">
+                            <div className="p-2 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm">
                               <span className="font-medium">Penatalaksanaan:</span>{' '}
                               {interaction.management}
                             </div>
@@ -289,13 +292,13 @@ export default function InteraksiPage() {
               })}
             </div>
           ) : (
-            <Card className="border-green-200 dark:border-green-900">
-              <CardContent className="p-8 text-center">
-                <CheckCircle className="h-12 w-12 mx-auto text-green-600 mb-4" />
-                <h3 className="font-semibold text-lg text-green-700 dark:text-green-400">
+            <Card className="border-emerald-200 dark:border-emerald-900">
+              <CardContent className="p-6 sm:p-8 text-center">
+                <CheckCircle className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-emerald-600 mb-3 sm:mb-4" />
+                <h3 className="font-semibold text-base sm:text-lg text-emerald-700 dark:text-emerald-400">
                   Tidak Ada Interaksi Ditemukan
                 </h3>
-                <p className="text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
                   Tidak ditemukan interaksi signifikan antara obat-obat yang dipilih
                 </p>
               </CardContent>

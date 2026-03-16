@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { DrugCard, DrugListSkeleton } from '@/components/medical';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Pill } from 'lucide-react';
+import { Pill, Search } from 'lucide-react';
 
 async function DrugList({ search, kelas }: { search?: string; kelas?: string }) {
   const where: Record<string, unknown> = {};
@@ -35,9 +35,11 @@ async function DrugList({ search, kelas }: { search?: string; kelas?: string }) 
   if (drugs.length === 0) {
     return (
       <div className="text-center py-12">
-        <Pill className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+        <div className="p-4 rounded-full bg-muted w-fit mx-auto mb-4">
+          <Pill className="h-8 w-8 text-muted-foreground" />
+        </div>
         <h3 className="font-semibold text-lg">Tidak Ada Obat</h3>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-muted-foreground mt-1 text-sm px-4">
           {search || kelas 
             ? 'Tidak ditemukan obat dengan filter tersebut'
             : 'Database obat masih kosong'}
@@ -47,7 +49,7 @@ async function DrugList({ search, kelas }: { search?: string; kelas?: string }) 
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       {drugs.map((drug) => (
         <DrugCard key={drug.id} drug={drug} />
       ))}
@@ -67,10 +69,15 @@ async function KelasFilter() {
     .map((r) => r.drugClass)
     .filter((k): k is string => k !== null);
 
+  if (kelasList.length === 0) return null;
+
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
       <a href="/drugs">
-        <Badge variant="secondary" className="cursor-pointer hover:bg-primary/10">
+        <Badge 
+          variant="secondary" 
+          className="cursor-pointer hover:bg-primary/10 whitespace-nowrap px-3 py-1.5"
+        >
           Semua
         </Badge>
       </a>
@@ -78,7 +85,7 @@ async function KelasFilter() {
         <a key={kelas} href={`/drugs?kelas=${encodeURIComponent(kelas)}`}>
           <Badge 
             variant="secondary" 
-            className="cursor-pointer hover:bg-primary/10 capitalize"
+            className="cursor-pointer hover:bg-primary/10 capitalize whitespace-nowrap px-3 py-1.5"
           >
             {kelas}
           </Badge>
@@ -94,29 +101,32 @@ export default function DrugsPage({
   searchParams: Promise<{ search?: string; kelas?: string }>;
 }) {
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Database Obat</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">Database Obat</h1>
+          <p className="text-sm text-muted-foreground">
             Cari informasi obat, dosis, interaksi, dan kontraindikasi
           </p>
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <form className="flex-1 max-w-md">
+      {/* Search */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form className="flex-1 max-w-md relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             name="search"
             placeholder="Cari nama obat..."
             defaultValue=""
-            className="w-full"
+            className="w-full pl-10 h-11"
           />
         </form>
       </div>
 
-      <Suspense fallback={<div className="h-8" />}>
+      {/* Filter */}
+      <Suspense fallback={<div className="h-10" />}>
         <KelasFilter />
       </Suspense>
 

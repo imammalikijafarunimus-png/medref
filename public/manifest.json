@@ -1,0 +1,64 @@
+{
+  "name": "MedRef - Sistem Referensi Klinis",
+  "short_name": "MedRef",
+  "description": "Aplikasi referensi klinis untuk tenaga medis Indonesia. Database obat, herbal, dan pengetahuan klinis.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "id",
+  "categories": ["medical", "health", "reference"],
+  "icons": [
+    {
+      "src": "/icons/icon-512x512.jpeg",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.jpeg",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-192x192.jpeg",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.jpeg",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Cari Obat",
+      "short_name": "Obat",
+      "description": "Cari informasi obat",
+      "url": "/drugs",
+      "icons": [{ "src": "/icons/icon-192x192.jpeg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Cek Interaksi",
+      "short_name": "Interaksi",
+      "description": "Periksa interaksi obat",
+      "url": "/interaksi",
+      "icons": [{ "src": "/icons/icon-192x192.jpeg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Kalkulator Dosis",
+      "short_name": "Kalkulator",
+      "description": "Hitung dosis pediatrik",
+      "url": "/kalkulator",
+      "icons": [{ "src": "/icons/icon-192x192.jpeg", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

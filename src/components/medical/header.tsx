@@ -12,10 +12,13 @@ import {
   Heart,
   Calculator,
   AlertTriangle,
-  Home
+  Home,
+  Search
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { SearchBar } from '@/components/medical/search-bar';
 import { cn } from '@/lib/utils';
 
 const menuItems = [
@@ -32,12 +35,13 @@ const menuItems = [
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+        <Link href="/" className="flex items-center gap-2 font-bold text-lg shrink-0">
           <div className="p-1.5 rounded-lg bg-primary/10">
             <Pill className="h-5 w-5 text-primary" />
           </div>
@@ -45,7 +49,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center px-4">
           {menuItems.slice(0, 5).map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || 
@@ -69,21 +73,56 @@ export function Header() {
           })}
         </nav>
 
-        {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </Button>
+        {/* Right side actions */}
+        <div className="flex items-center gap-1">
+          {/* Desktop Search */}
+          <div className="hidden md:block relative w-64">
+            <SearchBar 
+              placeholder="Cari obat, herbal..." 
+              className="w-full"
+            />
+          </div>
+
+          {/* Mobile Search Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 w-9 p-0 md:hidden"
+            onClick={() => setSearchOpen(!searchOpen)}
+            aria-label="Buka pencarian"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+
+          <ThemeToggle />
+
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 w-9 p-0 md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
       </div>
+
+      {/* Mobile Search Bar */}
+      {searchOpen && (
+        <div className="md:hidden border-t px-4 py-3">
+          <SearchBar 
+            placeholder="Cari obat, herbal, gejala..."
+            className="w-full"
+            autoFocus
+          />
+        </div>
+      )}
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calculator, Baby, AlertTriangle } from 'lucide-react';
+import { Calculator, Baby, AlertTriangle, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,7 +41,6 @@ export default function KalkulatorPage() {
         const res = await fetch('/api/drugs?limit=100');
         const data = await res.json();
         if (data.success) {
-          // Filter yang punya dosis pediatrik
           const pediatricDrugs = data.data.filter(
             (drug: DrugDoseInfo & { doses: { pediatricDose: string | null }[] }) => 
               drug.doses?.some((d: { pediatricDose: string | null }) => d.pediatricDose)
@@ -62,11 +61,8 @@ export default function KalkulatorPage() {
 
     try {
       const weightNum = parseFloat(weight);
-      
-      // Parse dosis pediatrik (asumsi format: "10-15 mg/kg/hari")
       const pediatricDose = selectedDrug.pediatricDose || '';
       
-      // Ekstrak angka dari string dosis
       const doseMatch = pediatricDose.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
       const singleDoseMatch = pediatricDose.match(/(\d+(?:\.\d+)?)/);
       
@@ -74,7 +70,6 @@ export default function KalkulatorPage() {
       let unit = 'mg';
       
       if (doseMatch) {
-        // Ambil rata-rata dari range
         const min = parseFloat(doseMatch[1]);
         const max = parseFloat(doseMatch[2]);
         dosePerKg = (min + max) / 2;
@@ -82,7 +77,6 @@ export default function KalkulatorPage() {
         dosePerKg = parseFloat(singleDoseMatch[1]);
       }
 
-      // Extract unit
       const unitMatch = pediatricDose.match(/(mg|mcg|g|unit|IU)/i);
       if (unitMatch) {
         unit = unitMatch[1].toLowerCase();
@@ -90,7 +84,6 @@ export default function KalkulatorPage() {
 
       const calculatedDose = dosePerKg * weightNum;
       
-      // Parse max dose
       let maxDoseNum = null;
       if (selectedDrug.maxDose) {
         const maxMatch = selectedDrug.maxDose.match(/(\d+(?:\.\d+)?)/);
@@ -101,7 +94,6 @@ export default function KalkulatorPage() {
 
       const isWithinMax = maxDoseNum ? calculatedDose <= maxDoseNum : true;
 
-      // Warning berdasarkan usia
       let warning = null;
       if (age) {
         const ageNum = parseFloat(age);
@@ -128,30 +120,32 @@ export default function KalkulatorPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-2xl mx-auto">
+      {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="p-3 rounded-xl bg-orange-50 dark:bg-orange-950/30">
-          <Calculator className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+        <div className="p-2.5 sm:p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 shrink-0">
+          <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Kalkulator Dosis Pediatrik</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">Kalkulator Dosis Pediatrik</h1>
+          <p className="text-sm text-muted-foreground">
             Hitung dosis obat berdasarkan berat badan anak
           </p>
         </div>
       </div>
 
+      {/* Input Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Input Data</CardTitle>
+        <CardHeader className="pb-3 px-4 sm:px-6">
+          <CardTitle className="text-sm sm:text-base">Input Data</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 px-4 sm:px-6">
           {/* Pilih Obat */}
           <div className="space-y-2">
-            <Label htmlFor="drug">Pilih Obat</Label>
+            <Label htmlFor="drug" className="text-sm">Pilih Obat</Label>
             <select
               id="drug"
-              className="w-full px-3 py-2 border rounded-md bg-background"
+              className="w-full px-3 py-2.5 border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               value={selectedDrug?.id || ''}
               onChange={(e) => {
                 const drug = drugs.find((d) => d.id === e.target.value);
@@ -170,7 +164,7 @@ export default function KalkulatorPage() {
 
           {/* Berat Badan */}
           <div className="space-y-2">
-            <Label htmlFor="weight">Berat Badan (kg)</Label>
+            <Label htmlFor="weight" className="text-sm">Berat Badan (kg)</Label>
             <Input
               id="weight"
               type="number"
@@ -180,12 +174,13 @@ export default function KalkulatorPage() {
               placeholder="Contoh: 15"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
+              className="h-11"
             />
           </div>
 
-          {/* Usia (opsional) */}
+          {/* Usia */}
           <div className="space-y-2">
-            <Label htmlFor="age">Usia (tahun) - Opsional</Label>
+            <Label htmlFor="age" className="text-sm">Usia (tahun) - Opsional</Label>
             <Input
               id="age"
               type="number"
@@ -195,13 +190,14 @@ export default function KalkulatorPage() {
               placeholder="Contoh: 5"
               value={age}
               onChange={(e) => setAge(e.target.value)}
+              className="h-11"
             />
           </div>
 
           <Button 
             onClick={handleCalculate} 
             disabled={!selectedDrug || !weight || loading}
-            className="w-full"
+            className="w-full h-11"
           >
             {loading ? 'Menghitung...' : 'Hitung Dosis'}
           </Button>
@@ -212,8 +208,13 @@ export default function KalkulatorPage() {
       {selectedDrug && selectedDrug.pediatricDose && (
         <Card className="bg-muted/50">
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Dosis Pediatrik Referensi:</p>
-            <p className="font-medium mt-1">{selectedDrug.pediatricDose}</p>
+            <div className="flex items-start gap-3">
+              <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs text-muted-foreground">Dosis Pediatrik Referensi:</p>
+                <p className="font-medium mt-1 text-sm">{selectedDrug.pediatricDose}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -221,43 +222,45 @@ export default function KalkulatorPage() {
       {/* Hasil */}
       {result && (
         <Card className={cn(
-          result.isWithinMax ? 'border-green-200 dark:border-green-900' : 'border-red-200 dark:border-red-900'
+          result.isWithinMax 
+            ? 'border-emerald-200 dark:border-emerald-900' 
+            : 'border-rose-200 dark:border-rose-900'
         )}>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+          <CardHeader className="pb-3 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
               {result.isWithinMax ? (
-                <Baby className="h-5 w-5 text-green-600" />
+                <Baby className="h-5 w-5 text-emerald-600" />
               ) : (
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <AlertTriangle className="h-5 w-5 text-rose-600" />
               )}
               Hasil Perhitungan
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Dosis Hitung</p>
-                <p className="text-2xl font-bold">
+          <CardContent className="space-y-4 px-4 sm:px-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="text-xs text-muted-foreground">Dosis Hitung</p>
+                <p className="text-xl sm:text-2xl font-bold">
                   {result.calculatedDose} {result.unit}
                 </p>
               </div>
               {result.maxDose && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Dosis Maksimum</p>
-                  <p className="text-2xl font-bold">
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground">Dosis Maksimum</p>
+                  <p className="text-xl sm:text-2xl font-bold">
                     {result.maxDose} {result.unit}
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="p-3 rounded-lg bg-muted/50 text-sm">
-              <p className="text-muted-foreground">Formula:</p>
-              <p className="font-mono mt-1">{result.formula}</p>
+            <div className="p-3 rounded-lg bg-muted/50">
+              <p className="text-xs text-muted-foreground">Formula:</p>
+              <p className="font-mono mt-1 text-sm">{result.formula}</p>
             </div>
 
             {!result.isWithinMax && (
-              <Alert variant="destructive">
+              <Alert variant="destructive" className="text-sm">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   Dosis melebihi batas maksimum! Konsultasikan dengan dokter.
@@ -266,14 +269,14 @@ export default function KalkulatorPage() {
             )}
 
             {result.warning && (
-              <Alert>
+              <Alert className="text-sm">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>{result.warning}</AlertDescription>
               </Alert>
             )}
 
-            <Alert>
-              <AlertDescription className="text-xs">
+            <Alert className="text-xs">
+              <AlertDescription>
                 <strong>Disclaimer:</strong> Hasil perhitungan ini hanya untuk referensi. 
                 Selalu verifikasi dengan dosis resmi dan konsultasikan dengan dokter atau apoteker.
               </AlertDescription>

@@ -5,6 +5,7 @@ export { DrugCard } from './drug-card';
 export { HerbalCard } from './herbal-card';
 export { NoteCard } from './note-card';
 export { Header } from './header';
+export { BottomNav } from './bottom-nav';
 
 // Loading states
 export {

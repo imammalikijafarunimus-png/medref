@@ -19,8 +19,10 @@ async function ambilJumlahData() {
 function BagianPencarian() {
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="text-center mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">MedRef</h1>
+      <div className="text-center mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-teal-500 bg-clip-text text-transparent">
+          MedRef
+        </h1>
         <p className="text-sm sm:text-base text-muted-foreground">
           Sistem Referensi Klinis Personal
         </p>
@@ -47,18 +49,18 @@ async function BagianAksesCepat() {
       count: jumlah.drugsCount,
     },
     {
-      title: "Kalkulator Dosis",
-      description: "Perhitungan dosis pediatrik",
-      href: "/kalkulator",
-      icon: "calculator",
-      color: "orange" as const,
-    },
-    {
       title: "Cek Interaksi",
       description: "Periksa interaksi obat",
       href: "/interaksi",
       icon: "alert",
       color: "red" as const,
+    },
+    {
+      title: "Kalkulator Dosis",
+      description: "Perhitungan dosis pediatrik",
+      href: "/kalkulator",
+      icon: "calculator",
+      color: "orange" as const,
     },
     {
       title: "Obat Herbal",
@@ -69,20 +71,20 @@ async function BagianAksesCepat() {
       count: jumlah.herbalsCount,
     },
     {
-      title: "Catatan Klinis",
-      description: "Panduan referensi cepat",
-      href: "/notes",
-      icon: "file",
-      color: "purple" as const,
-      count: jumlah.notesCount,
-    },
-    {
       title: "Panduan Gejala",
       description: "Cari obat berdasarkan gejala",
       href: "/symptoms",
       icon: "stethoscope",
       color: "teal" as const,
       count: jumlah.symptomsCount,
+    },
+    {
+      title: "Catatan Klinis",
+      description: "Panduan referensi cepat",
+      href: "/notes",
+      icon: "file",
+      color: "purple" as const,
+      count: jumlah.notesCount,
     },
     {
       title: "Favorit",
@@ -94,7 +96,7 @@ async function BagianAksesCepat() {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-6 sm:mt-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
       {menuAksesCepat.map((item) => (
         <QuickAccessCard
           key={item.href}
@@ -130,7 +132,7 @@ function SkeletonAksesCepat() {
 
 export default function HalamanUtama() {
   return (
-    <main className="flex flex-col items-center px-2 sm:px-0 py-8 min-h-screen">
+    <main className="flex flex-col items-center px-2 sm:px-0 py-4 sm:py-8 min-h-screen">
       <BagianPencarian />
       
       <Suspense fallback={<SkeletonAksesCepat />}>
