@@ -1,13 +1,234 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "debian-openssl-3.0.x"]
+  engineType    = "library"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+}
+
+model Drug {
+  id                String                 @id @default(cuid())
+  name              String
+  genericName       String?
+  brandNames        String?
+  drugClass         String?
+  category          String?      // <--- Must exist
+  description       String?      // <--- Must exist
+  dosage            String?      // <--- Must exist
+  mechanism         String?
+  route             String?
+  halfLife          String?
+  excretion         String?
+  pregnancyCat      String?
+  lactation         String?
+  storage           String?
+  notes             String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  // Relations
+  contraindications  DrugContraindication[]
+  doses              DrugDose[]
+  indications        DrugIndication[]
+  interactions       DrugInteraction[]      @relation("DrugInteractions")
+  interactingWith    DrugInteraction[]      @relation("InteractingDrug")
+  favorites          Favorite[]             @relation("DrugFavorites")
+  herbalInteractions HerbalInteraction[]    @relation("HerbalDrugInteractions")
+  symptomMappings    SymptomDrugMapping[]
+
+  @@index([name])
+  @@index([genericName])
+  @@index([drugClass])
+}
+
+model DrugDose {
+  id              String   @id @default(cuid())
+  drugId          String
+  indication      String?
+  adultDose       String
+  pediatricDose   String?
+  pediatricMinAge String?
+  pediatricMaxAge String?
+  maxDose         String?
+  maxDoseUnit     String?
+  frequency       String?
+  duration        String?
+  renalAdjust     String?
+  hepaticAdjust   String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  drug            Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
+}
+
+model DrugIndication {
+  id         String   @id @default(cuid())
+  drugId     String
+  indication String
+  icdCode    String?
+  priority   Int      @default(0)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  drug       Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
+}
+
+model DrugContraindication {
+  id               String   @id @default(cuid())
+  drugId           String
+  contraindication String
+  severity         String?
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  drug             Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
+}
+
+model DrugInteraction {
+  id                String   @id @default(cuid())
+  drugId            String
+  interactingDrugId String
+  interactionType   String?
+  effect            String?
+  mechanism         String?
+  management        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  drug              Drug     @relation("DrugInteractions", fields: [drugId], references: [id], onDelete: Cascade)
+  interactingDrug   Drug     @relation("InteractingDrug", fields: [interactingDrugId], references: [id], onDelete: Cascade)
+}
+
+model Herbal {
+  id               String              @id @default(cuid())
+  name             String
+  latinName        String?
+  commonNames      String?
+  plantPart        String?
+  preparation      String?
+  traditionalUse   String?
+  safetyRating     String?
+  pregnancySafety  String?
+  lactationSafety  String?
+  pediatricSafety  String?
+  regulatoryStatus String?
+  references       String?
+  notes            String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  favorites        Favorite[]          @relation("HerbalFavorites")
+  compounds        HerbalCompound[]
+  indications      HerbalIndication[]
+  interactions     HerbalInteraction[] @relation("HerbalInteractions")
+  interactingWith  HerbalInteraction[] @relation("InteractingHerbal")
+
+  @@index([name])
+  @@index([latinName])
+}
+
+model HerbalCompound {
+  id            String   @id @default(cuid())
+  herbalId      String
+  compoundName  String
+  concentration String?
+  pharmacology  String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  herbal        Herbal   @relation(fields: [herbalId], references: [id], onDelete: Cascade)
+}
+
+model HerbalIndication {
+  id            String   @id @default(cuid())
+  herbalId      String
+  indication    String
+  evidenceLevel String?
+  studyType     String?
+  dosage        String?
+  duration      String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  herbal        Herbal   @relation(fields: [herbalId], references: [id], onDelete: Cascade)
+
+  @@unique([herbalId, indication])  // <-- Tambahkan ini
+}
+
+model HerbalInteraction {
+  id                  String   @id @default(cuid())
+  herbalId            String
+  interactingDrugId   String?
+  interactingHerbalId String?
+  interactionType     String?
+  effect              String?
+  mechanism           String?
+  management          String?
+  references          String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  herbal              Herbal   @relation("HerbalInteractions", fields: [herbalId], references: [id], onDelete: Cascade)
+  interactingHerbal   Herbal?  @relation("InteractingHerbal", fields: [interactingHerbalId], references: [id], onDelete: Cascade)
+  interactingDrug     Drug?    @relation("HerbalDrugInteractions", fields: [interactingDrugId], references: [id], onDelete: SetNull)
+}
+
+model ClinicalNote {
+  id          String     @id @default(cuid())
+  title       String
+  content     String
+  category    String
+  specialty   String?
+  tags        String?
+  source      String?
+  author      String?
+  version     Int        @default(1)
+  isPublished Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  favorites   Favorite[] @relation("NoteFavorites")
+
+  @@index([title])
+  @@index([category])
+}
+
+model Symptom {
+  id           String               @id @default(cuid())
+  name         String
+  category     String?
+  description  String?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  drugMappings SymptomDrugMapping[]
+
+  @@index([name])
+  @@index([category])
+}
+
+model SymptomDrugMapping {
+  id          String   @id @default(cuid())
+  symptomId   String
+  drugId      String
+  priority    Int      @default(0)
+  isFirstLine Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  drug        Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
+  symptom     Symptom  @relation(fields: [symptomId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id        String        @id @default(cuid())
+  userId    String
+  itemType  String
+  drugId    String?
+  herbalId  String?
+  noteId    String?
+  notes     String?
+  createdAt DateTime      @default(now())
+  drug      Drug?         @relation("DrugFavorites", fields: [drugId], references: [id], onDelete: Cascade)
+  herbal    Herbal?       @relation("HerbalFavorites", fields: [herbalId], references: [id], onDelete: Cascade)
+  note      ClinicalNote? @relation("NoteFavorites", fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemType, drugId, herbalId, noteId])
 }

@@ -1,65 +1,141 @@
-import Image from "next/image";
+import { Suspense } from 'react';
+import { db } from '@/lib/db';
+import { SearchBar } from '@/components/medical/search-bar';
+import { QuickAccessCard } from '@/components/medical/quick-access-card';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function Home() {
+// Ambil jumlah untuk kartu akses cepat
+async function ambilJumlahData() {
+  const [drugsCount, herbalsCount, notesCount, symptomsCount] = await Promise.all([
+    db.drug.count(),
+    db.herbal.count(),
+    db.clinicalNote.count({ where: { isPublished: true } }),
+    db.symptom.count(),
+  ]);
+
+  return { drugsCount, herbalsCount, notesCount, symptomsCount };
+}
+
+function BagianPencarian() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="text-center mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">MedRef</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Sistem Referensi Klinis Personal
+        </p>
+      </div>
+      <SearchBar
+        placeholder="Cari obat, herbal, gejala, catatan klinis..."
+        className="w-full"
+        autoFocus={false}
+      />
     </div>
+  );
+}
+
+async function BagianAksesCepat() {
+  const jumlah = await ambilJumlahData();
+
+  const menuAksesCepat = [
+    {
+      title: "Database Obat",
+      description: "Cari obat, dosis, interaksi",
+      href: "/drugs",
+      icon: "pill",
+      color: "blue" as const,
+      count: jumlah.drugsCount,
+    },
+    {
+      title: "Kalkulator Dosis",
+      description: "Perhitungan dosis pediatrik",
+      href: "/kalkulator",
+      icon: "calculator",
+      color: "orange" as const,
+    },
+    {
+      title: "Cek Interaksi",
+      description: "Periksa interaksi obat",
+      href: "/interaksi",
+      icon: "alert",
+      color: "red" as const,
+    },
+    {
+      title: "Obat Herbal",
+      description: "Referensi herbal berbasis bukti",
+      href: "/herbals",
+      icon: "leaf",
+      color: "green" as const,
+      count: jumlah.herbalsCount,
+    },
+    {
+      title: "Catatan Klinis",
+      description: "Panduan referensi cepat",
+      href: "/notes",
+      icon: "file",
+      color: "purple" as const,
+      count: jumlah.notesCount,
+    },
+    {
+      title: "Panduan Gejala",
+      description: "Cari obat berdasarkan gejala",
+      href: "/symptoms",
+      icon: "stethoscope",
+      color: "teal" as const,
+      count: jumlah.symptomsCount,
+    },
+    {
+      title: "Favorit",
+      description: "Item tersimpan Anda",
+      href: "/favorites",
+      icon: "heart",
+      color: "red" as const,
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-6 sm:mt-8">
+      {menuAksesCepat.map((item) => (
+        <QuickAccessCard
+          key={item.href}
+          title={item.title}
+          description={item.description}
+          href={item.href}
+          icon={item.icon}
+          color={item.color}
+          count={item.count}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SkeletonAksesCepat() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-6 sm:mt-8">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="rounded-lg border p-4">
+          <div className="flex items-start justify-between">
+            <Skeleton className="h-12 w-12 rounded-xl" />
+            <Skeleton className="h-8 w-8" />
+          </div>
+          <Skeleton className="h-5 w-28 mt-3" />
+          <Skeleton className="h-4 w-full mt-2" />
+          <Skeleton className="h-4 w-16 mt-3" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function HalamanUtama() {
+  return (
+    <main className="flex flex-col items-center px-2 sm:px-0 py-8 min-h-screen">
+      <BagianPencarian />
+      
+      <Suspense fallback={<SkeletonAksesCepat />}>
+        <BagianAksesCepat />
+      </Suspense>
+    </main>
   );
 }
