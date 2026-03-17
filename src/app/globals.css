@@ -16,7 +16,7 @@
   --secondary: oklch(96% 0.01 200);
   --secondary-foreground: oklch(30% 0.02 250);
   --muted: oklch(96% 0.01 200);
-  --muted-foreground: oklch(50% 0.02 250);
+  --muted-foreground: oklch(45% 0.02 250); /* Fixed: better contrast */
   --accent: oklch(96% 0.01 200);
   --accent-foreground: oklch(30% 0.02 250);
   --destructive: oklch(55% 0.22 25);
@@ -25,13 +25,97 @@
   --input: oklch(90% 0.01 200);
   --ring: oklch(55% 0.18 200);
   --radius: 0.625rem;
-  
+
   /* Chart colors */
   --chart-1: oklch(55% 0.18 200);
   --chart-2: oklch(60% 0.15 160);
   --chart-3: oklch(65% 0.2 40);
   --chart-4: oklch(70% 0.15 300);
   --chart-5: oklch(75% 0.12 100);
+
+  /* ============================================
+     SEMANTIC STATUS COLORS
+     ============================================ */
+
+  /* Success — untuk safe/aman/berhasil */
+  --success: oklch(55% 0.16 160);
+  --success-foreground: oklch(98% 0 0);
+  --success-subtle: oklch(96% 0.04 160);
+  --success-subtle-foreground: oklch(35% 0.12 160);
+  --success-border: oklch(80% 0.08 160);
+
+  /* Warning — untuk hati-hati/caution */
+  --warning: oklch(68% 0.18 70);
+  --warning-foreground: oklch(98% 0 0);
+  --warning-subtle: oklch(97% 0.04 70);
+  --warning-subtle-foreground: oklch(38% 0.14 70);
+  --warning-border: oklch(82% 0.09 70);
+
+  /* Danger — untuk tidak aman/unsafe/destructive */
+  --danger: oklch(55% 0.22 25);
+  --danger-foreground: oklch(98% 0 0);
+  --danger-subtle: oklch(97% 0.04 25);
+  --danger-subtle-foreground: oklch(38% 0.16 25);
+  --danger-border: oklch(82% 0.1 25);
+
+  /* Info — untuk informasi netral */
+  --info: oklch(58% 0.18 240);
+  --info-foreground: oklch(98% 0 0);
+  --info-subtle: oklch(96% 0.04 240);
+  --info-subtle-foreground: oklch(35% 0.12 240);
+  --info-border: oklch(80% 0.08 240);
+
+  /* ============================================
+     DRUG CATEGORY COLORS
+     Hue reference: oklch(L% C H)
+     ============================================ */
+  --cat-analgesic: oklch(55% 0.16 160);
+  --cat-analgesic-subtle: oklch(96% 0.04 160);
+
+  --cat-antibiotic: oklch(55% 0.2 25);
+  --cat-antibiotic-subtle: oklch(97% 0.04 25);
+
+  --cat-antiviral: oklch(55% 0.18 290);
+  --cat-antiviral-subtle: oklch(96% 0.04 290);
+
+  --cat-antifungal: oklch(65% 0.18 55);
+  --cat-antifungal-subtle: oklch(97% 0.04 55);
+
+  --cat-cardiovascular: oklch(60% 0.2 10);
+  --cat-cardiovascular-subtle: oklch(97% 0.04 10);
+
+  --cat-respiratory: oklch(60% 0.18 210);
+  --cat-respiratory-subtle: oklch(96% 0.04 210);
+
+  --cat-gastrointestinal: oklch(65% 0.17 65);
+  --cat-gastrointestinal-subtle: oklch(97% 0.04 65);
+
+  --cat-neurology: oklch(55% 0.2 270);
+  --cat-neurology-subtle: oklch(96% 0.04 270);
+
+  --cat-antidiabetic: oklch(58% 0.18 220);
+  --cat-antidiabetic-subtle: oklch(96% 0.04 220);
+
+  --cat-general: oklch(55% 0.12 200);
+  --cat-general-subtle: oklch(96% 0.03 200);
+
+  /* ============================================
+     HERBAL SAFETY LEVELS
+     ============================================ */
+  --safety-safe: oklch(55% 0.16 160);
+  --safety-safe-subtle: oklch(96% 0.04 160);
+  --safety-safe-border: oklch(78% 0.1 160);
+  --safety-safe-foreground: oklch(35% 0.12 160);
+
+  --safety-caution: oklch(68% 0.18 70);
+  --safety-caution-subtle: oklch(97% 0.04 70);
+  --safety-caution-border: oklch(80% 0.1 70);
+  --safety-caution-foreground: oklch(38% 0.14 70);
+
+  --safety-unsafe: oklch(55% 0.22 25);
+  --safety-unsafe-subtle: oklch(97% 0.04 25);
+  --safety-unsafe-border: oklch(80% 0.12 25);
+  --safety-unsafe-foreground: oklch(38% 0.16 25);
 }
 
 .dark {
@@ -55,13 +139,62 @@
   --border: oklch(30% 0.02 250);
   --input: oklch(30% 0.02 250);
   --ring: oklch(65% 0.18 200);
-  
+
   /* Chart colors - dark */
   --chart-1: oklch(65% 0.18 200);
   --chart-2: oklch(65% 0.15 160);
   --chart-3: oklch(70% 0.2 40);
   --chart-4: oklch(70% 0.15 300);
   --chart-5: oklch(75% 0.12 100);
+
+  /* ============================================
+     DARK MODE: SEMANTIC STATUS COLORS
+     Di dark mode, subtle menjadi gelap bukan terang
+     ============================================ */
+
+  --success: oklch(60% 0.16 160);
+  --success-foreground: oklch(15% 0.02 160);
+  --success-subtle: oklch(22% 0.06 160);
+  --success-subtle-foreground: oklch(75% 0.12 160);
+  --success-border: oklch(35% 0.1 160);
+
+  --warning: oklch(72% 0.18 70);
+  --warning-foreground: oklch(15% 0.02 70);
+  --warning-subtle: oklch(22% 0.06 70);
+  --warning-subtle-foreground: oklch(78% 0.14 70);
+  --warning-border: oklch(35% 0.1 70);
+
+  --danger: oklch(62% 0.22 25);
+  --danger-foreground: oklch(15% 0.02 25);
+  --danger-subtle: oklch(22% 0.07 25);
+  --danger-subtle-foreground: oklch(75% 0.16 25);
+  --danger-border: oklch(35% 0.12 25);
+
+  --info: oklch(65% 0.18 240);
+  --info-foreground: oklch(15% 0.02 240);
+  --info-subtle: oklch(22% 0.06 240);
+  --info-subtle-foreground: oklch(75% 0.12 240);
+  --info-border: oklch(35% 0.1 240);
+
+  /* Drug categories dark — subtle menjadi gelap */
+  --cat-analgesic-subtle: oklch(22% 0.06 160);
+  --cat-antibiotic-subtle: oklch(22% 0.07 25);
+  --cat-antiviral-subtle: oklch(22% 0.06 290);
+  --cat-antifungal-subtle: oklch(22% 0.06 55);
+  --cat-cardiovascular-subtle: oklch(22% 0.07 10);
+  --cat-respiratory-subtle: oklch(22% 0.06 210);
+  --cat-gastrointestinal-subtle: oklch(22% 0.06 65);
+  --cat-neurology-subtle: oklch(22% 0.07 270);
+  --cat-antidiabetic-subtle: oklch(22% 0.06 220);
+  --cat-general-subtle: oklch(22% 0.05 200);
+
+  /* Safety dark */
+  --safety-safe-subtle: oklch(22% 0.06 160);
+  --safety-safe-foreground: oklch(72% 0.12 160);
+  --safety-caution-subtle: oklch(22% 0.06 70);
+  --safety-caution-foreground: oklch(75% 0.14 70);
+  --safety-unsafe-subtle: oklch(22% 0.07 25);
+  --safety-unsafe-foreground: oklch(72% 0.16 25);
 }
 
 @theme inline {
@@ -95,7 +228,7 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -103,7 +236,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Better text rendering */
   html {
     text-rendering: optimizeLegibility;
   }
@@ -115,21 +247,21 @@
     scrollbar-width: thin;
     scrollbar-color: var(--muted) transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: oklch(50% 0 0 / 0.3);
     border-radius: 3px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: oklch(50% 0 0 / 0.5);
   }
@@ -172,7 +304,7 @@
   .no-print {
     display: none !important;
   }
-  
+
   body {
     background: white !important;
     color: black !important;
@@ -196,7 +328,6 @@
 
 /* Mobile-specific optimizations */
 @media (max-width: 640px) {
-  /* Prevent zoom on input focus (iOS) */
   input[type="text"],
   input[type="search"],
   input[type="email"],
@@ -213,7 +344,6 @@
   color-scheme: dark;
 }
 
-/* Light mode specific adjustments */
 :root:not(.dark) {
   color-scheme: light;
 }
@@ -225,30 +355,207 @@
   }
 }
 
-/* Card hover effects */
+/* ============================================
+   MEDICAL APP SPECIFIC UTILITIES
+   ============================================ */
 @layer utilities {
+  /* Card hover effects */
   .card-hover {
     @apply transition-all duration-200 hover:shadow-md hover:border-primary/20;
   }
-}
 
-/* Glass effect for modern look */
-@layer utilities {
+  /* Glass effect for modern look */
   .glass {
     @apply bg-background/80 backdrop-blur-lg;
   }
-}
 
-/* Text balance for better typography */
-@layer utilities {
+  /* Text balance for better typography */
   .text-balance {
     text-wrap: balance;
   }
-}
 
-/* Gradient text */
-@layer utilities {
+  /* Gradient text */
   .gradient-text {
     @apply bg-gradient-to-r from-primary to-teal-500 bg-clip-text text-transparent;
+  }
+
+  /* ============================================
+     STATUS BADGE UTILITIES
+     ============================================ */
+  .badge-success {
+    background-color: var(--success-subtle);
+    color: var(--success-subtle-foreground);
+    border: 1px solid var(--success-border);
+  }
+
+  .badge-warning {
+    background-color: var(--warning-subtle);
+    color: var(--warning-subtle-foreground);
+    border: 1px solid var(--warning-border);
+  }
+
+  .badge-danger {
+    background-color: var(--danger-subtle);
+    color: var(--danger-subtle-foreground);
+    border: 1px solid var(--danger-border);
+  }
+
+  .badge-info {
+    background-color: var(--info-subtle);
+    color: var(--info-subtle-foreground);
+    border: 1px solid var(--info-border);
+  }
+
+  /* ============================================
+     SAFETY LEVEL UTILITIES
+     ============================================ */
+  .safety-safe {
+    background-color: var(--safety-safe-subtle);
+    color: var(--safety-safe-foreground);
+    border-color: var(--safety-safe-border);
+  }
+
+  .safety-caution {
+    background-color: var(--safety-caution-subtle);
+    color: var(--safety-caution-foreground);
+    border-color: var(--safety-caution-border);
+  }
+
+  .safety-unsafe {
+    background-color: var(--safety-unsafe-subtle);
+    color: var(--safety-unsafe-foreground);
+    border-color: var(--safety-unsafe-border);
+  }
+
+  /* ============================================
+     MEDICAL CARD VARIANT
+     ============================================ */
+  .medical-card {
+    @apply transition-all duration-200 rounded-lg border bg-card;
+    @apply hover:shadow-sm hover:border-primary/30 hover:-translate-y-0.5;
+  }
+
+  /* ============================================
+     PULSE ANIMATION — untuk loading states
+     ============================================ */
+  .pulse-medical {
+    animation: pulse-medical 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-medical {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ============================================
+     DENSITY UTILITIES
+     ============================================ */
+  .density-compact {
+    @apply text-sm leading-tight;
+  }
+
+  .density-comfortable {
+    @apply text-sm leading-relaxed;
+  }
+
+  /* ============================================
+     DRUG INTERACTION SEVERITY
+     ============================================ */
+  .severity-mild {
+    background-color: var(--info-subtle);
+    color: var(--info-subtle-foreground);
+    border: 1px solid var(--info-border);
+  }
+
+  .severity-moderate {
+    background-color: var(--warning-subtle);
+    color: var(--warning-subtle-foreground);
+    border: 1px solid var(--warning-border);
+  }
+
+  .severity-severe {
+    background-color: var(--danger-subtle);
+    color: var(--danger-subtle-foreground);
+    border: 1px solid var(--danger-border);
+  }
+
+  .severity-contraindicated {
+    background-color: var(--danger);
+    color: var(--danger-foreground);
+    font-weight: 600;
+  }
+
+  /* ============================================
+     TYPOGRAPHY UTILITIES
+     ============================================ */
+  /* Untuk angka dosis — tabular nums */
+  .font-numeric {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Untuk nama obat */
+  .text-drug-name {
+    @apply font-medium tracking-tight;
+  }
+
+  /* Warning/critical text */
+  .text-critical {
+    @apply font-semibold;
+    color: var(--danger);
+    letter-spacing: 0.01em;
+  }
+
+  /* ============================================
+     DRUG CATEGORY UTILITIES
+     ============================================ */
+  .cat-analgesic {
+    background-color: var(--cat-analgesic-subtle);
+    color: var(--cat-analgesic);
+  }
+
+  .cat-antibiotic {
+    background-color: var(--cat-antibiotic-subtle);
+    color: var(--cat-antibiotic);
+  }
+
+  .cat-antiviral {
+    background-color: var(--cat-antiviral-subtle);
+    color: var(--cat-antiviral);
+  }
+
+  .cat-antifungal {
+    background-color: var(--cat-antifungal-subtle);
+    color: var(--cat-antifungal);
+  }
+
+  .cat-cardiovascular {
+    background-color: var(--cat-cardiovascular-subtle);
+    color: var(--cat-cardiovascular);
+  }
+
+  .cat-respiratory {
+    background-color: var(--cat-respiratory-subtle);
+    color: var(--cat-respiratory);
+  }
+
+  .cat-gastrointestinal {
+    background-color: var(--cat-gastrointestinal-subtle);
+    color: var(--cat-gastrointestinal);
+  }
+
+  .cat-neurology {
+    background-color: var(--cat-neurology-subtle);
+    color: var(--cat-neurology);
+  }
+
+  .cat-antidiabetic {
+    background-color: var(--cat-antidiabetic-subtle);
+    color: var(--cat-antidiabetic);
+  }
+
+  .cat-general {
+    background-color: var(--cat-general-subtle);
+    color: var(--cat-general);
   }
 }
