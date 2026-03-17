@@ -5,12 +5,21 @@ CREATE TABLE "Drug" (
     "genericName" TEXT,
     "brandNames" TEXT,
     "drugClass" TEXT,
+    "category" TEXT,
+    "description" TEXT,
     "mechanism" TEXT,
     "route" TEXT,
     "halfLife" TEXT,
+    "bioavailability" TEXT,
+    "proteinBinding" TEXT,
+    "metabolism" TEXT,
     "excretion" TEXT,
     "pregnancyCat" TEXT,
     "lactation" TEXT,
+    "blackBoxWarning" TEXT,
+    "regulatoryStatus" TEXT,
+    "monitoringParameters" TEXT,
+    "counselingPoints" TEXT,
     "storage" TEXT,
     "notes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -48,6 +57,7 @@ CREATE TABLE "DrugIndication" (
     "indication" TEXT NOT NULL,
     "icdCode" TEXT,
     "priority" INTEGER NOT NULL DEFAULT 0,
+    "isFdaApproved" BOOLEAN NOT NULL DEFAULT false,
     "notes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -77,6 +87,7 @@ CREATE TABLE "DrugInteraction" (
     "effect" TEXT,
     "mechanism" TEXT,
     "management" TEXT,
+    "evidenceLevel" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -89,13 +100,19 @@ CREATE TABLE "Herbal" (
     "name" TEXT NOT NULL,
     "latinName" TEXT,
     "commonNames" TEXT,
+    "localNames" TEXT,
+    "plantFamily" TEXT,
+    "category" TEXT,
     "plantPart" TEXT,
     "preparation" TEXT,
     "traditionalUse" TEXT,
+    "description" TEXT,
     "safetyRating" TEXT,
     "pregnancySafety" TEXT,
     "lactationSafety" TEXT,
     "pediatricSafety" TEXT,
+    "contraindications" TEXT,
+    "sideEffects" TEXT,
     "regulatoryStatus" TEXT,
     "references" TEXT,
     "notes" TEXT,
@@ -110,8 +127,10 @@ CREATE TABLE "HerbalCompound" (
     "id" TEXT NOT NULL,
     "herbalId" TEXT NOT NULL,
     "compoundName" TEXT NOT NULL,
+    "synonyms" TEXT,
     "concentration" TEXT,
     "pharmacology" TEXT,
+    "biologicalActivity" TEXT,
     "notes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -145,6 +164,7 @@ CREATE TABLE "HerbalInteraction" (
     "effect" TEXT,
     "mechanism" TEXT,
     "management" TEXT,
+    "evidenceLevel" TEXT,
     "references" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -220,10 +240,19 @@ CREATE INDEX "Drug_genericName_idx" ON "Drug"("genericName");
 CREATE INDEX "Drug_drugClass_idx" ON "Drug"("drugClass");
 
 -- CreateIndex
+CREATE INDEX "Drug_category_idx" ON "Drug"("category");
+
+-- CreateIndex
 CREATE INDEX "Herbal_name_idx" ON "Herbal"("name");
 
 -- CreateIndex
 CREATE INDEX "Herbal_latinName_idx" ON "Herbal"("latinName");
+
+-- CreateIndex
+CREATE INDEX "Herbal_category_idx" ON "Herbal"("category");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "HerbalIndication_herbalId_indication_key" ON "HerbalIndication"("herbalId", "indication");
 
 -- CreateIndex
 CREATE INDEX "ClinicalNote_title_idx" ON "ClinicalNote"("title");
@@ -266,6 +295,9 @@ ALTER TABLE "HerbalInteraction" ADD CONSTRAINT "HerbalInteraction_herbalId_fkey"
 
 -- AddForeignKey
 ALTER TABLE "HerbalInteraction" ADD CONSTRAINT "HerbalInteraction_interactingHerbalId_fkey" FOREIGN KEY ("interactingHerbalId") REFERENCES "Herbal"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "HerbalInteraction" ADD CONSTRAINT "HerbalInteraction_interactingDrugId_fkey" FOREIGN KEY ("interactingDrugId") REFERENCES "Drug"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SymptomDrugMapping" ADD CONSTRAINT "SymptomDrugMapping_drugId_fkey" FOREIGN KEY ("drugId") REFERENCES "Drug"("id") ON DELETE CASCADE ON UPDATE CASCADE;

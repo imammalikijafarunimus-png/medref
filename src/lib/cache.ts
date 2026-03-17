@@ -85,10 +85,38 @@ export const CacheKeys = {
     search: (query: string) => `drugs:search:${query}`,
     classes: () => 'drugs:classes',
   },
-  herbals: {
-    list: (page = 1, limit = 20) => `herbals:list:${page}:${limit}`,
-    detail: (id: string) => `herbals:detail:${id}`,
-    search: (query: string) => `herbals:search:${query}`,
+   herbals: {
+   list: (
+    params:
+      | number
+      | {
+          halaman?: number;
+          batas?: number;
+          cari?: string;
+          keamanan?: string;
+        } = 1,
+    limitArg?: number
+   ) => {
+    // 🔹 Support old usage (number)
+    if (typeof params === 'number') {
+      const page = params;
+      const limit = limitArg ?? 20;
+      return `herbals:list:${page}:${limit}`;
+    }
+
+    // 🔹 New usage (object - RECOMMENDED)
+    const {
+      halaman = 1,
+      batas = 20,
+      cari = '',
+      keamanan = '',
+    } = params;
+
+    return `herbals:list:${halaman}:${batas}:${cari}:${keamanan}`;
+   },
+
+   detail: (id: string) => `herbals:detail:${id}`,
+   search: (query: string) => `herbals:search:${query}`,
   },
   notes: {
     list: (page = 1, limit = 20, category?: string) => 

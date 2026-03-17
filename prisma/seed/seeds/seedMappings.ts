@@ -1,6 +1,5 @@
 import { prisma } from "../../client"; 
 
-import { PrismaClient } from "@prisma/client"
 import { drugSymptomMappings } from "../data/mappings/drugSymptomMappings"
 
 export async function seedMappings() {

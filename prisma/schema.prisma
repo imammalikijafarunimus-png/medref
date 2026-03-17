@@ -9,24 +9,30 @@ datasource db {
 }
 
 model Drug {
-  id                String                 @id @default(cuid())
-  name              String
-  genericName       String?
-  brandNames        String?
-  drugClass         String?
-  category          String?      // <--- Must exist
-  description       String?      // <--- Must exist
-  dosage            String?      // <--- Must exist
-  mechanism         String?
-  route             String?
-  halfLife          String?
-  excretion         String?
-  pregnancyCat      String?
-  lactation         String?
-  storage           String?
-  notes             String?
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
+  id                  String                 @id @default(cuid())
+  name                String
+  genericName         String?
+  brandNames          String?
+  drugClass           String?
+  category            String?                // Kategori: analgesic, antibiotic, etc.
+  description         String?                // Deskripsi lengkap
+  mechanism           String?
+  route               String?
+  halfLife            String?
+  bioavailability     String?                // Bioavailabilitas
+  proteinBinding      String?                // Ikatan protein
+  metabolism          String?                // Metabolisme
+  excretion           String?
+  pregnancyCat        String?
+  lactation           String?
+  blackBoxWarning     String?                // Peringatan kotak hitam FDA
+  regulatoryStatus    String?                // JSON: { BPOM, FDA, JKN }
+  monitoringParameters String?               // Parameter monitoring
+  counselingPoints    String?                // Edukasi pasien
+  storage             String?
+  notes               String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
 
   // Relations
   contraindications  DrugContraindication[]
@@ -41,6 +47,7 @@ model Drug {
   @@index([name])
   @@index([genericName])
   @@index([drugClass])
+  @@index([category])
 }
 
 model DrugDose {
@@ -64,15 +71,16 @@ model DrugDose {
 }
 
 model DrugIndication {
-  id         String   @id @default(cuid())
-  drugId     String
-  indication String
-  icdCode    String?
-  priority   Int      @default(0)
-  notes      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  drug       Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  drugId        String
+  indication    String
+  icdCode       String?
+  priority      Int      @default(0)
+  isFdaApproved Boolean  @default(false)    // Apakah disetujui FDA
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  drug          Drug     @relation(fields: [drugId], references: [id], onDelete: Cascade)
 }
 
 model DrugContraindication {
@@ -94,6 +102,7 @@ model DrugInteraction {
   effect            String?
   mechanism         String?
   management        String?
+  evidenceLevel     String?               // Level bukti interaksi
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   drug              Drug     @relation("DrugInteractions", fields: [drugId], references: [id], onDelete: Cascade)
@@ -105,13 +114,19 @@ model Herbal {
   name             String
   latinName        String?
   commonNames      String?
+  localNames       String?             // Nama lokal Indonesia
+  plantFamily      String?             // Famili tumbuhan
+  category         String?             // Kategori: antiinflammatory, digestive, etc.
   plantPart        String?
   preparation      String?
   traditionalUse   String?
+  description      String?             // Deskripsi lengkap
   safetyRating     String?
   pregnancySafety  String?
   lactationSafety  String?
   pediatricSafety  String?
+  contraindications String?            // Kontraindikasi
+  sideEffects      String?             // Efek samping
   regulatoryStatus String?
   references       String?
   notes            String?
@@ -125,18 +140,21 @@ model Herbal {
 
   @@index([name])
   @@index([latinName])
+  @@index([category])
 }
 
 model HerbalCompound {
-  id            String   @id @default(cuid())
-  herbalId      String
-  compoundName  String
-  concentration String?
-  pharmacology  String?
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  herbal        Herbal   @relation(fields: [herbalId], references: [id], onDelete: Cascade)
+  id                String   @id @default(cuid())
+  herbalId          String
+  compoundName      String
+  synonyms          String?             // Nama sinonim/singkatan
+  concentration     String?
+  pharmacology      String?
+  biologicalActivity String?            // Aktivitas biologis
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  herbal            Herbal   @relation(fields: [herbalId], references: [id], onDelete: Cascade)
 }
 
 model HerbalIndication {
@@ -164,6 +182,7 @@ model HerbalInteraction {
   effect              String?
   mechanism           String?
   management          String?
+  evidenceLevel       String?             // Level bukti interaksi
   references          String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt

@@ -1,18 +1,26 @@
 import { Suspense } from 'react';
-import Link from 'next/link';
 import { db } from '@/lib/db';
+
+// Force dynamic rendering to prevent build-time database access
+export const dynamic = 'force-dynamic';
 import { HerbalCard, HerbalListSkeleton } from '@/components/medical';
 import { Input } from '@/components/ui/input';
-import { Leaf } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Leaf, Search } from 'lucide-react';
 
-async function HerbalList({ search }: { search?: string }) {
+async function HerbalList({ search, kategori }: { search?: string; kategori?: string }) {
   const where: Record<string, unknown> = {};
+
+  if (kategori) {
+    where.category = kategori;
+  }
 
   if (search) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
       { latinName: { contains: search, mode: 'insensitive' } },
       { commonNames: { contains: search, mode: 'insensitive' } },
+      { localNames: { contains: search, mode: 'insensitive' } },
     ];
   }
 
@@ -22,17 +30,21 @@ async function HerbalList({ search }: { search?: string }) {
     take: 50,
     include: {
       indications: { take: 3 },
+      compounds: { take: 1 },
+      interactions: true,
     },
   });
 
   if (herbals.length === 0) {
     return (
       <div className="text-center py-12">
-        <Leaf className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+        <div className="p-4 rounded-full bg-muted w-fit mx-auto mb-4">
+          <Leaf className="h-8 w-8 text-muted-foreground" />
+        </div>
         <h3 className="font-semibold text-lg">Tidak Ada Herbal</h3>
-        <p className="text-muted-foreground mt-1">
-          {search 
-            ? 'Tidak ditemukan herbal dengan pencarian tersebut'
+        <p className="text-muted-foreground mt-1 text-sm px-4">
+          {search || kategori 
+            ? 'Tidak ditemukan herbal dengan filter tersebut'
             : 'Database herbal masih kosong'}
         </p>
       </div>
@@ -40,7 +52,7 @@ async function HerbalList({ search }: { search?: string }) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       {herbals.map((herbal) => (
         <HerbalCard key={herbal.id} herbal={herbal} />
       ))}
@@ -48,29 +60,103 @@ async function HerbalList({ search }: { search?: string }) {
   );
 }
 
-export default function HerbalsPage() {
+async function KategoriFilter() {
+  // Get distinct categories for filter
+  const result = await db.herbal.findMany({
+    where: { category: { not: null } },
+    select: { category: true },
+    distinct: ['category'],
+    orderBy: { category: 'asc' },
+  });
+
+  const kategoriList = result
+    .map((r) => r.category)
+    .filter((k): k is string => k !== null);
+
+  if (kategoriList.length === 0) return null;
+
+  // Map for display labels
+  const labelMap: Record<string, string> = {
+    digestive: 'Pencernaan',
+    immunity: 'Imunitas',
+    antiinflammatory: 'Antiinflamasi',
+    respiratory: 'Respirasi',
+    nervous: 'Saraf',
+    cardiovascular: 'Kardiovaskular',
+    metabolic: 'Metabolik',
+    'skin-topical': 'Kulit',
+    urinary: 'Urinari',
+    reproductive: 'Reproduksi',
+    analgesic: 'Analgesik',
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <a href="/herbals">
+        <Badge 
+          variant="secondary" 
+          className="cursor-pointer hover:bg-primary/10 whitespace-nowrap px-3 py-1.5"
+        >
+          Semua
+        </Badge>
+      </a>
+      {kategoriList.map((kategori) => (
+        <a key={kategori} href={`/herbals?kategori=${encodeURIComponent(kategori)}`}>
+          <Badge 
+            variant="secondary" 
+            className="cursor-pointer hover:bg-primary/10 capitalize whitespace-nowrap px-3 py-1.5"
+          >
+            {labelMap[kategori] || kategori}
+          </Badge>
+        </a>
+      ))}
+    </div>
+  );
+}
+
+async function HerbalListWrapper({ searchParams }: { searchParams: Promise<{ search?: string; kategori?: string }> }) {
+  const params = await searchParams;
+  return <HerbalList search={params.search} kategori={params.kategori} />;
+}
+
+export default function HerbalsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; kategori?: string }>;
+}) {
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Obat Herbal</h1>
-          <p className="text-muted-foreground">
-            Referensi herbal berbasis bukti ilmiah
+          <h1 className="text-xl sm:text-2xl font-bold">Obat Herbal</h1>
+          <p className="text-sm text-muted-foreground">
+            Referensi herbal berbasis bukti ilmiah dengan informasi keamanan dan interaksi
           </p>
         </div>
       </div>
 
       {/* Search */}
-      <div className="max-w-md">
-        <Input
-          placeholder="Cari nama herbal atau nama latin..."
-          className="w-full"
-        />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form className="flex-1 max-w-md relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            name="search"
+            placeholder="Cari nama herbal, nama latin, atau nama umum..."
+            defaultValue=""
+            className="w-full pl-10 h-11"
+          />
+        </form>
       </div>
+
+      {/* Filter by Category */}
+      <Suspense fallback={<div className="h-10" />}>
+        <KategoriFilter />
+      </Suspense>
 
       {/* Herbal List */}
       <Suspense fallback={<HerbalListSkeleton count={9} />}>
-        <HerbalList />
+        <HerbalListWrapper searchParams={searchParams} />
       </Suspense>
     </div>
   );

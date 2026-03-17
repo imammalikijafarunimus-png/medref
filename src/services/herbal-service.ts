@@ -1,9 +1,23 @@
-// Layanan Data Herbal
+// Layanan Data Herbal (DTO + Mapper Version)
 import { db } from '@/lib/db';
 import { cache, CacheKeys, CacheTTL } from '@/lib/cache';
-import type { Herbal } from '@/types';
 
-// Ambil daftar herbal
+import {
+  mapToHerbalListDTO,
+  mapToHerbalDetailDTO,
+} from '@/lib/mappers/herbal.mapper';
+
+import type {
+  HerbalListDTO,
+  HerbalDetailDTO,
+} from '@/types/dto/herbal.dto';
+
+//
+// ==========================
+// 🔷 AMBIL DAFTAR HERBAL
+// ==========================
+//
+
 export async function ambilDaftarHerbal(options: {
   halaman?: number;
   batas?: number;
@@ -27,6 +41,22 @@ export async function ambilDaftarHerbal(options: {
     ];
   }
 
+  const cacheKey = CacheKeys.herbals.list({
+    halaman,
+    batas,
+    cari,
+    keamanan,
+  });
+
+  const cached = cache.get<{
+    data: HerbalListDTO[];
+    total: number;
+    halaman: number;
+    batas: number;
+  }>(cacheKey);
+
+  if (cached) return cached;
+
   const [data, total] = await Promise.all([
     db.herbal.findMany({
       where,
@@ -43,13 +73,30 @@ export async function ambilDaftarHerbal(options: {
     db.herbal.count({ where }),
   ]);
 
-  return { data: data as Herbal[], total };
+  const result = {
+    data: data.map(mapToHerbalListDTO),
+    total,
+    halaman,
+    batas,
+  };
+
+  cache.set(cacheKey, result, CacheTTL.list);
+
+  return result;
 }
 
-// Ambil detail herbal
-export async function ambilDetailHerbal(id: string) {
+//
+// ==========================
+// 🔷 AMBIL DETAIL HERBAL
+// ==========================
+//
+
+export async function ambilDetailHerbal(
+  id: string
+): Promise<HerbalDetailDTO | null> {
   const cacheKey = CacheKeys.herbals.detail(id);
-  const cached = cache.get<Herbal>(cacheKey);
+
+  const cached = cache.get<HerbalDetailDTO>(cacheKey);
   if (cached) return cached;
 
   const herbal = await db.herbal.findUnique({
@@ -62,20 +109,27 @@ export async function ambilDetailHerbal(id: string) {
       interactions: {
         where: { interactingDrugId: { not: null } },
         include: {
-          interactingDrug: { select: { id: true, name: true } },
+          interactingDrug: true,
         },
       },
     },
   });
 
-  if (herbal) {
-    cache.set(cacheKey, herbal as Herbal, CacheTTL.detail);
-  }
+  if (!herbal) return null;
 
-  return herbal as Herbal | null;
+  const dto = mapToHerbalDetailDTO(herbal);
+
+  cache.set(cacheKey, dto, CacheTTL.detail);
+
+  return dto;
 }
 
-// Buat herbal baru
+//
+// ==========================
+// 🔷 BUAT HERBAL
+// ==========================
+//
+
 export async function buatHerbal(data: {
   name: string;
   latinName?: string;
@@ -94,15 +148,24 @@ export async function buatHerbal(data: {
   const herbal = await db.herbal.create({
     data: {
       ...data,
-      commonNames: data.commonNames ? JSON.stringify(data.commonNames) : null,
+      commonNames: data.commonNames
+        ? JSON.stringify(data.commonNames)
+        : null,
     },
   });
 
+  // invalidate cache
   cache.deletePattern('^herbals:list:');
+
   return herbal;
 }
 
-// Update herbal
+//
+// ==========================
+// 🔷 UPDATE HERBAL
+// ==========================
+//
+
 export async function updateHerbal(
   id: string,
   data: Partial<{
@@ -125,16 +188,25 @@ export async function updateHerbal(
     where: { id },
     data: {
       ...data,
-      commonNames: data.commonNames ? JSON.stringify(data.commonNames) : undefined,
+      commonNames: data.commonNames
+        ? JSON.stringify(data.commonNames)
+        : undefined,
     },
   });
 
+  // invalidate cache
   cache.delete(CacheKeys.herbals.detail(id));
   cache.deletePattern('^herbals:list:');
+
   return herbal;
 }
 
-// Hapus herbal
+//
+// ==========================
+// 🔷 HAPUS HERBAL
+// ==========================
+//
+
 export async function hapusHerbal(id: string) {
   await db.herbal.delete({ where: { id } });
 
@@ -142,7 +214,12 @@ export async function hapusHerbal(id: string) {
   cache.deletePattern('^herbals:list:');
 }
 
-// Tambah senyawa aktif herbal
+//
+// ==========================
+// 🔷 TAMBAH SENYAWA
+// ==========================
+//
+
 export async function tambahSenyawaHerbal(
   herbalId: string,
   data: {
@@ -157,10 +234,16 @@ export async function tambahSenyawaHerbal(
   });
 
   cache.delete(CacheKeys.herbals.detail(herbalId));
+
   return senyawa;
 }
 
-// Tambah indikasi herbal
+//
+// ==========================
+// 🔷 TAMBAH INDIKASI
+// ==========================
+//
+
 export async function tambahIndikasiHerbal(
   herbalId: string,
   data: {
@@ -177,10 +260,16 @@ export async function tambahIndikasiHerbal(
   });
 
   cache.delete(CacheKeys.herbals.detail(herbalId));
+
   return indikasi;
 }
 
-// Hitung total herbal
+//
+// ==========================
+// 🔷 TOTAL HERBAL
+// ==========================
+//
+
 export async function hitungTotalHerbal() {
   return db.herbal.count();
 }

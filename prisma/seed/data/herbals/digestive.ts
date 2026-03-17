@@ -1,47 +1,315 @@
-export const digestiveHerbals = [
+import { HerbalSeedData } from '../../types';
+
+/**
+ * Data Herbal - Kategori Pencernaan
+ * Enterprise-Grade Medical Database
+ */
+export const digestiveHerbals: HerbalSeedData[] = [
   {
-    id: "herbal-ginger",
-    name: "Ginger",
-    latinName: "Zingiber officinale",
-    commonNames: "jahe, ginger root",
-    plantPart: "Rhizome",
-    preparation: "Tea, extract, capsule",
-    traditionalUse: "Herbal untuk mual dan gangguan pencernaan",
-    safetyRating: "safe",
-    pregnancySafety: "caution",
-    lactationSafety: "safe",
-    pediatricSafety: "safe",
-    indications: [
-      "nausea",
-      "vomiting", 
-      "dyspepsia"
+    id: 'digest-peppermint',
+    name: 'Peppermint',
+    latinName: 'Mentha piperita',
+    commonNames: 'Mint, Mentha, Daun Mint',
+    localNames: 'Mint, Peppermint',
+    plantFamily: 'Lamiaceae',
+    category: 'digestive',
+    plantPart: 'Daun dan batang',
+    preparation: 'Teh, Minyak atsiri, Kapsul enterik, Topikal',
+    traditionalUse: 'Digunakan untuk gangguan pencernaan, kembung, dan sebagai karminatif.',
+    description: 'Herba aromatik dengan mentol sebagai senyawa utama. Antispasmodik otot polos GI.',
+    safetyRating: 'aman',
+    pregnancySafety: 'Aman dalam jumlah masakan. Hindari minyak atsiri dosis tinggi',
+    lactationSafety: 'Aman dalam jumlah masakan',
+    pediatricSafety: 'Hindari pada anak <8 tahun (minyak atsiri)',
+    contraindications: 'GERD berat (dapat memperburuk). Hernia hiatal. Asma (inhalasi).',
+    sideEffects: 'Heartburn jika kapsul tidak enterik. Reaksi alergi kulit pada minyak.',
+    regulatoryStatus: {
+      BPOM: 'jamu',
+      FDA: 'GRAS',
+      EMA: 'well-established-use',
+    },
+    references: 'Alam MS, et al. J Pharm Pharmacol. 2022;74(5):739-750',
+    notes: 'Kapsul enterik penting untuk menghindari relaksasi LES yang dapat memperburuk GERD.',
+    compounds: [
+      {
+        compoundName: 'Menthol',
+        synonyms: 'Mentol',
+        concentration: '40-50% minyak atsiri',
+        pharmacology: 'Antispasmodik pada otot polos GI, karminatif, analgesik topikal',
+        biologicalActivity: 'Aktivasi TRPM8, relaksasi otot polos',
+      },
+      {
+        compoundName: 'Menthone',
+        synonyms: 'Menton',
+        concentration: '20-30% minyak atsiri',
+        pharmacology: 'Antispasmodik, antimikroba',
+      },
+      {
+        compoundName: 'Menthyl acetate',
+        synonyms: 'Mentil asetat',
+        concentration: '5-10%',
+        pharmacology: 'Aromatik, karminatif',
+      },
     ],
-    contraindications: [
-      "bleeding disorders"
+    indications: [
+      {
+        indication: 'Irritable Bowel Syndrome (IBS)',
+        evidenceLevel: 'kuat',
+        studyType: 'meta-analysis',
+        dosage: '180-225 mg minyak peppermint 2-3x/hari (kapsul enterik)',
+        duration: '4-8 minggu',
+        notes: 'Efektif untuk IBS dengan diare dan nyeri',
+        studyResults: 'Perbaikan gejala global 40-60% vs plasebo',
+      },
+      {
+        indication: 'Dispepsia fungsional',
+        evidenceLevel: 'moderat',
+        studyType: 'RCT',
+        dosage: 'Teh peppermint 2-3x/hari atau 180 mg kapsul',
+      },
+      {
+        indication: 'Tension headache (topikal)',
+        evidenceLevel: 'kuat',
+        studyType: 'RCT',
+        dosage: '10% minyak peppermint topikal',
+        notes: 'Aplikasi pada pelipis dan dahi',
+      },
     ],
     interactions: [
-      "warfarin"
-    ]
+      {
+        interactingDrugId: 'drug-cyclosporine',
+        interactingDrugName: 'Cyclosporine',
+        interactionType: 'moderat',
+        effect: 'Peningkatan absorpsi siklosporin',
+        management: 'Monitor kadar',
+        evidenceLevel: 'moderat',
+      },
+    ],
   },
+
   {
-    id: "herbal-peppermint",
-    name: "Peppermint",
-    latinName: "Mentha piperita",
-    commonNames: "peppermint, mint",
-    plantPart: "Leaves",
-    preparation: "Tea, oil, capsule",
-    traditionalUse: "Digunakan untuk kembung dan IBS",
-    safetyRating: "safe",
-    pregnancySafety: "safe",
-    lactationSafety: "safe",
-    pediatricSafety: "caution",
+    id: 'digest-artichoke',
+    name: 'Artichoke',
+    latinName: 'Cynara scolymus',
+    commonNames: 'Globe Artichoke, Artichoke, Cynara',
+    localNames: 'Artichoke, Artisuk',
+    plantFamily: 'Asteraceae',
+    category: 'digestive',
+    plantPart: 'Daun, Batang, Akar',
+    preparation: 'Ekstrak kering, Cairan, Teh',
+    traditionalUse: 'Pengobatan tradisional untuk gangguan hati dan empedu.',
+    description: 'Tanaman dengan cynarin sebagai senyawa aktif. Hepatoprotektif dan kolagog.',
+    safetyRating: 'aman',
+    pregnancySafety: 'Data terbatas, hindari dosis tinggi',
+    lactationSafety: 'Data terbatas',
+    pediatricSafety: 'Aman dalam makanan',
+    contraindications: 'Obstruksi empedu. Alergi Asteraceae.',
+    sideEffects: 'Gangguan GI ringan. Reaksi alergi pada sensitif Asteraceae.',
+    regulatoryStatus: {
+      BPOM: 'suplemen-kesehatan',
+      EMA: 'traditional-herbal',
+    },
+    references: 'Sahebkar A, et al. Phytother Res. 2018;32(2):238-247',
+    notes: 'Kontraindikasi pada obstruksi empedu. Meningkatkan sekresi empedu.',
+    compounds: [
+      {
+        compoundName: 'Cynarin',
+        synonyms: 'Cynarin, Sinarin',
+        concentration: '0.5-2%',
+        pharmacology: 'Hepatoprotektif, kolagog, menurunkan kolesterol',
+        biologicalActivity: 'Meningkatkan sekresi empedu dan detoksifikasi hati',
+      },
+      {
+        compoundName: 'Chlorogenic acid',
+        synonyms: 'Asam klorogenat',
+        concentration: '2-5%',
+        pharmacology: 'Antioksidan, hepatoprotektif',
+      },
+      {
+        compoundName: 'Luteolin',
+        synonyms: 'Luteolin',
+        concentration: 'Flavonoid',
+        pharmacology: 'Antioksidan, antiinflamasi',
+      },
+    ],
     indications: [
-      "bloating",
-      "irritable bowel syndrome"
+      {
+        indication: 'Dispepsia fungsional',
+        evidenceLevel: 'kuat',
+        studyType: 'RCT',
+        dosage: '320-640 mg ekstrak daun 2-3x/hari',
+        duration: '4-8 minggu',
+        notes: 'Meningkatkan pengosongan lambung dan gejala dyspepsia',
+      },
+      {
+        indication: 'Hiperkolesterolemia ringan',
+        evidenceLevel: 'moderat',
+        studyType: 'meta-analysis',
+        dosage: '500-2000 mg ekstrak/hari',
+        duration: '6-12 minggu',
+        notes: 'Penurunan LDL 15-20%',
+      },
     ],
-    contraindications: [
-      "GERD"
+    interactions: [], // Tidak ada interaksi signifikan
+  },
+
+  {
+    id: 'digest-licorice',
+    name: 'Licorice',
+    latinName: 'Glycyrrhiza glabra',
+    commonNames: 'Akriman, Liquorice, Sweet Root, Gan Cao',
+    localNames: 'Akar Manis, Licorice',
+    plantFamily: 'Fabaceae',
+    category: 'digestive',
+    plantPart: 'Akar dan stolon',
+    preparation: 'Ekstrak kering, Teh, Deglycyrrhizinat (DGL)',
+    traditionalUse: 'Pengobatan TCM dan barat untuk batuk, sakit tenggorokan, dan gangguan pencernaan.',
+    description: 'Akar manis dengan glisirizin. Antiinflamasi dan mukoprotektif. DGL tanpa efek mineralokortikoid.',
+    safetyRating: 'hati-hati',
+    pregnancySafety: 'Hindari',
+    lactationSafety: 'Hindari',
+    pediatricSafety: 'Hindari penggunaan jangka panjang',
+    contraindications: 'Hipertensi. Gagal jantung. Gangguan hati. Hipokalemia. Kehamilan.',
+    sideEffects: 'Pseudoaldosteronisme (retensi Na+, hipokalemia, hipertensi) pada penggunaan >6 minggu.',
+    regulatoryStatus: {
+      BPOM: 'jamu',
+      FDA: 'GRAS',
+      EMA: 'traditional-herbal',
+    },
+    references: 'Pastorino G, et al. Phytother Res. 2018;32(11):2121-2140',
+    notes: 'Pseudoaldosteronisme dengan penggunaan >6 minggu. DGL lebih aman untuk GI.',
+    compounds: [
+      {
+        compoundName: 'Glycyrrhizin',
+        synonyms: 'Glisirizin, Glycyrrhizic acid',
+        concentration: '2-15%',
+        pharmacology: 'Antiinflamasi, imunomodulator, pseudomineralokortikoid',
+        notes: 'Penyebab pseudoaldosteronisme',
+      },
+      {
+        compoundName: 'Glycyrrhetinic acid',
+        synonyms: 'Asam glisiretinat',
+        concentration: 'Metabolit aktif',
+        pharmacology: 'Antiinflamasi poten',
+      },
+      {
+        compoundName: 'Liquiritin',
+        synonyms: 'Likiritin',
+        concentration: 'Flavonoid',
+        pharmacology: 'Antispasmodik, antioksidan',
+      },
     ],
-    interactions: []
-  }
+    indications: [
+      {
+        indication: 'Ulkus peptikum (DGL)',
+        evidenceLevel: 'moderat',
+        studyType: 'RCT',
+        dosage: '380-800 mg DGL 2-3x/hari',
+        duration: '4-12 minggu',
+        notes: 'Deglycyrrhizinat untuk menghindari efek mineralokortikoid',
+      },
+      {
+        indication: 'Dispepsia fungsional',
+        evidenceLevel: 'moderat',
+        studyType: 'RCT',
+        dosage: 'DGL 380 mg 3x/hari',
+      },
+    ],
+    interactions: [
+      {
+        interactingDrugId: 'drug-furosemide',
+        interactingDrugName: 'Furosemide',
+        interactionType: 'mayor',
+        effect: 'Hipokalemia berat, aritmia',
+        management: 'Monitor kalium ketat, hindari kombinasi',
+        evidenceLevel: 'kuat',
+      },
+      {
+        interactingDrugId: 'drug-lisinopril',
+        interactingDrugName: 'Lisinopril',
+        interactionType: 'mayor',
+        effect: 'Penurunan efek antihipertensi',
+        management: 'Monitor TD dan kalium',
+        evidenceLevel: 'kuat',
+      },
+      {
+        interactingDrugId: 'drug-digoxin',
+        interactingDrugName: 'Digoxin',
+        interactionType: 'mayor',
+        effect: 'Toksisitas digoksin akibat hipokalemia',
+        management: 'Monitor K+ dan kadar digoksin',
+        evidenceLevel: 'kuat',
+      },
+    ],
+  },
+
+  {
+    id: 'digest-ginger',
+    name: 'Jahe',
+    latinName: 'Zingiber officinale',
+    commonNames: 'Ginger, Jahe merah, Jahe putih',
+    localNames: 'Jahe, Jae',
+    plantFamily: 'Zingiberaceae',
+    category: 'digestive',
+    plantPart: 'Rimpang (Rhizome)',
+    preparation: 'Teh, Ekstrak cair, Kapsul, Serbuk',
+    traditionalUse: 'Rempah dan obat untuk mual, gangguan pencernaan, dan kondisi dingin.',
+    description: 'Rimpang dengan gingerol sebagai senyawa aktif. Antimetik dan prokinetik.',
+    safetyRating: 'aman',
+    pregnancySafety: 'Aman untuk mual kehamilan. Hindari dosis tinggi dekat persalinan',
+    lactationSafety: 'Aman',
+    pediatricSafety: 'Aman dalam dosis masakan',
+    contraindications: 'Gangguan perdarahan (hati-hati). Batu empedu.',
+    sideEffects: 'Heartburn, diare pada dosis tinggi.',
+    regulatoryStatus: {
+      BPOM: 'jamu',
+      FDA: 'GRAS',
+    },
+    compounds: [
+      {
+        compoundName: '6-Gingerol',
+        synonyms: 'Gingerol',
+        concentration: '1-3%',
+        pharmacology: 'Antiemetik, prokinetik, antiinflamasi',
+      },
+      {
+        compoundName: '6-Shogaol',
+        synonyms: 'Shogaol',
+        concentration: 'Pengeringan',
+        pharmacology: 'Antiinflamasi poten',
+      },
+    ],
+    indications: [
+      {
+        indication: 'Mual dan muntah kehamilan',
+        evidenceLevel: 'kuat',
+        studyType: 'meta-analysis',
+        dosage: '250-500 mg ekstrak atau 1-2 g segar 2-3x/hari',
+        notes: 'Alternatif non-farmakologis yang efektif',
+      },
+      {
+        indication: 'Mual post-operasi',
+        evidenceLevel: 'kuat',
+        studyType: 'meta-analysis',
+        dosage: '0.5-1 g sebelum operasi',
+      },
+      {
+        indication: 'Dispepsia',
+        evidenceLevel: 'moderat',
+        studyType: 'RCT',
+        dosage: 'Teh jahe 2-3x/hari',
+        notes: 'Efek prokinetik',
+      },
+    ],
+    interactions: [
+      {
+        interactingDrugId: 'drug-warfarin',
+        interactingDrugName: 'Warfarin',
+        interactionType: 'moderat',
+        effect: 'Peningkatan efek antikoagulan',
+        management: 'Monitor INR',
+        evidenceLevel: 'moderat',
+      },
+    ],
+  },
 ];

@@ -1,21 +1,25 @@
 import { Suspense } from 'react';
 import { db } from '@/lib/db';
+
+// Force dynamic rendering to prevent build-time database access
+export const dynamic = 'force-dynamic';
 import { DrugCard, DrugListSkeleton } from '@/components/medical';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Pill, Search } from 'lucide-react';
 
-async function DrugList({ search, kelas }: { search?: string; kelas?: string }) {
+async function DrugList({ search, kategori }: { search?: string; kategori?: string }) {
   const where: Record<string, unknown> = {};
 
-  if (kelas) {
-    where.drugClass = kelas;
+  if (kategori) {
+    where.category = kategori;
   }
 
   if (search) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
       { genericName: { contains: search, mode: 'insensitive' } },
+      { brandNames: { contains: search, mode: 'insensitive' } },
     ];
   }
 
@@ -40,7 +44,7 @@ async function DrugList({ search, kelas }: { search?: string; kelas?: string }) 
         </div>
         <h3 className="font-semibold text-lg">Tidak Ada Obat</h3>
         <p className="text-muted-foreground mt-1 text-sm px-4">
-          {search || kelas 
+          {search || kategori 
             ? 'Tidak ditemukan obat dengan filter tersebut'
             : 'Database obat masih kosong'}
         </p>
@@ -57,19 +61,49 @@ async function DrugList({ search, kelas }: { search?: string; kelas?: string }) 
   );
 }
 
-async function KelasFilter() {
+async function KategoriFilter() {
   const result = await db.drug.findMany({
-    where: { drugClass: { not: null } },
-    select: { drugClass: true },
-    distinct: ['drugClass'],
-    orderBy: { drugClass: 'asc' },
+    where: { category: { not: null } },
+    select: { category: true },
+    distinct: ['category'],
+    orderBy: { category: 'asc' },
   });
 
-  const kelasList = result
-    .map((r) => r.drugClass)
+  const kategoriList = result
+    .map((r) => r.category)
     .filter((k): k is string => k !== null);
 
-  if (kelasList.length === 0) return null;
+  if (kategoriList.length === 0) return null;
+
+  // Label untuk kategori
+  const labelMap: Record<string, string> = {
+    analgesic: 'Analgesik',
+    antibiotic: 'Antibiotik',
+    antiviral: 'Antiviral',
+    antifungal: 'Antijamur',
+    cardiovascular: 'Kardiovaskular',
+    diuretic: 'Diuretik',
+    anticoagulant: 'Antikoagulan',
+    antiarrhythmic: 'Antiarritmia',
+    'lipid-lowering': 'Penurun Lipid',
+    antianginal: 'Antiangina',
+    endocrine: 'Endokrin',
+    respiratory: 'Respirasi',
+    neurology: 'Neurologi',
+    psychiatry: 'Psikiatri',
+    gastrointestinal: 'Gastrointestinal',
+    dermatology: 'Dermatologi',
+    antimigraine: 'Antimigrain',
+    antigout: 'Antigout',
+    antihistamine: 'Antihistamin',
+    antidiabetic: 'Antidiabetes',
+    thyroid: 'Tiroid',
+    corticosteroid: 'Kortikosteroid',
+    urology: 'Urologi',
+    gynecology: 'Ginekologi',
+    'vitamin-supplement': 'Vitamin & Suplemen',
+    'otc-general': 'Obat Bebas',
+  };
 
   return (
     <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -81,13 +115,13 @@ async function KelasFilter() {
           Semua
         </Badge>
       </a>
-      {kelasList.map((kelas) => (
-        <a key={kelas} href={`/drugs?kelas=${encodeURIComponent(kelas)}`}>
+      {kategoriList.map((kategori) => (
+        <a key={kategori} href={`/drugs?kategori=${encodeURIComponent(kategori)}`}>
           <Badge 
             variant="secondary" 
-            className="cursor-pointer hover:bg-primary/10 capitalize whitespace-nowrap px-3 py-1.5"
+            className="cursor-pointer hover:bg-primary/10 whitespace-nowrap px-3 py-1.5"
           >
-            {kelas}
+            {labelMap[kategori] || kategori}
           </Badge>
         </a>
       ))}
@@ -95,10 +129,15 @@ async function KelasFilter() {
   );
 }
 
+async function DrugListWrapper({ searchParams }: { searchParams: Promise<{ search?: string; kategori?: string }> }) {
+  const params = await searchParams;
+  return <DrugList search={params.search} kategori={params.kategori} />;
+}
+
 export default function DrugsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; kelas?: string }>;
+  searchParams: Promise<{ search?: string; kategori?: string }>;
 }) {
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -118,21 +157,21 @@ export default function DrugsPage({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             name="search"
-            placeholder="Cari nama obat..."
+            placeholder="Cari nama obat, generik, atau merek..."
             defaultValue=""
             className="w-full pl-10 h-11"
           />
         </form>
       </div>
 
-      {/* Filter */}
+      {/* Filter by Category */}
       <Suspense fallback={<div className="h-10" />}>
-        <KelasFilter />
+        <KategoriFilter />
       </Suspense>
 
       {/* Drug List */}
       <Suspense fallback={<DrugListSkeleton count={9} />}>
-        <DrugList />
+        <DrugListWrapper searchParams={searchParams} />
       </Suspense>
     </div>
   );

@@ -62,12 +62,13 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/icons/icon-192x192.jpeg" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.jpeg" />
+        <link rel="icon" href="/icons/icon-512x512.png" type="image/png" />
+        <link rel="icon" href="/icons/icon-192x192.png" type="image/png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/icons/icon-512x512.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
