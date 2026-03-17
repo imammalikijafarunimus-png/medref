@@ -1,20 +1,11 @@
 import { Suspense } from 'react';
-import { db } from '@/lib/db';
+import { ambilJumlahData } from '@/lib/data';
 import { SearchBar } from '@/components/medical/search-bar';
 import { QuickAccessCard } from '@/components/medical/quick-access-card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Ambil jumlah untuk kartu akses cepat
-async function ambilJumlahData() {
-  const [drugsCount, herbalsCount, notesCount, symptomsCount] = await Promise.all([
-    db.drug.count(),
-    db.herbal.count(),
-    db.clinicalNote.count({ where: { isPublished: true } }),
-    db.symptom.count(),
-  ]);
-
-  return { drugsCount, herbalsCount, notesCount, symptomsCount };
-}
+// Force dynamic rendering to prevent build-time database access
+export const dynamic = 'force-dynamic';
 
 function BagianPencarian() {
   return (
@@ -39,6 +30,7 @@ function BagianPencarian() {
 async function BagianAksesCepat() {
   const jumlah = await ambilJumlahData();
 
+  // 8 cards for 2 rows of 4
   const menuAksesCepat = [
     {
       title: "Database Obat",
@@ -56,11 +48,18 @@ async function BagianAksesCepat() {
       color: "red" as const,
     },
     {
-      title: "Kalkulator Dosis",
-      description: "Perhitungan dosis pediatrik",
+      title: "Kalkulator Medis",
+      description: "Dosis, BMI, GFR, kalori",
       href: "/kalkulator",
       icon: "calculator",
       color: "orange" as const,
+    },
+    {
+      title: "Nilai Normal Lab",
+      description: "Referensi nilai laboratorium",
+      href: "/lab-values",
+      icon: "beaker",
+      color: "cyan" as const,
     },
     {
       title: "Obat Herbal",
@@ -96,48 +95,52 @@ async function BagianAksesCepat() {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8">
-      {menuAksesCepat.map((item) => (
-        <QuickAccessCard
-          key={item.href}
-          title={item.title}
-          description={item.description}
-          href={item.href}
-          icon={item.icon}
-          color={item.color}
-          count={item.count}
-        />
-      ))}
+    <div className="w-full max-w-5xl mx-auto mt-6 sm:mt-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        {menuAksesCepat.map((item) => (
+          <QuickAccessCard
+            key={item.href}
+            title={item.title}
+            description={item.description}
+            href={item.href}
+            icon={item.icon}
+            color={item.color}
+            count={item.count}
+          />
+        ))}
+      </div>
     </div>
   );
 }
 
 function SkeletonAksesCepat() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-6 sm:mt-8">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="rounded-lg border p-4">
-          <div className="flex items-start justify-between">
-            <Skeleton className="h-12 w-12 rounded-xl" />
-            <Skeleton className="h-8 w-8" />
+    <div className="w-full max-w-5xl mx-auto mt-6 sm:mt-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="rounded-lg border p-4">
+            <div className="flex items-start justify-between">
+              <Skeleton className="h-10 w-10 rounded-xl" />
+              <Skeleton className="h-5 w-5" />
+            </div>
+            <Skeleton className="h-4 w-24 mt-3" />
+            <Skeleton className="h-3 w-full mt-2" />
+            <Skeleton className="h-3 w-12 mt-2" />
           </div>
-          <Skeleton className="h-5 w-28 mt-3" />
-          <Skeleton className="h-4 w-full mt-2" />
-          <Skeleton className="h-4 w-16 mt-3" />
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
 
 export default function HalamanUtama() {
   return (
-    <main className="flex flex-col items-center px-2 sm:px-0 py-4 sm:py-8 min-h-screen">
+    <div className="flex flex-col items-center w-full">
       <BagianPencarian />
       
       <Suspense fallback={<SkeletonAksesCepat />}>
         <BagianAksesCepat />
       </Suspense>
-    </main>
+    </div>
   );
 }

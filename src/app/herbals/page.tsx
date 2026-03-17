@@ -7,8 +7,21 @@ import { HerbalCard, HerbalListSkeleton } from '@/components/medical';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Leaf, Search } from 'lucide-react';
+import { HerbalPagination } from './HerbalPagination';
 
-async function HerbalList({ search, kategori }: { search?: string; kategori?: string }) {
+const ITEMS_PER_PAGE = 25;
+
+async function HerbalList({
+  search,
+  kategori,
+  page,
+  limit,
+}: {
+  search?: string;
+  kategori?: string;
+  page: number;
+  limit: number;
+}) {
   const where: Record<string, unknown> = {};
 
   if (kategori) {
@@ -24,16 +37,20 @@ async function HerbalList({ search, kategori }: { search?: string; kategori?: st
     ];
   }
 
-  const herbals = await db.herbal.findMany({
-    where,
-    orderBy: { name: 'asc' },
-    take: 50,
-    include: {
-      indications: { take: 3 },
-      compounds: { take: 1 },
-      interactions: true,
-    },
-  });
+  const [herbals, totalItems] = await Promise.all([
+    db.herbal.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        indications: { take: 3 },
+        compounds: { take: 1 },
+        interactions: true,
+      },
+    }),
+    db.herbal.count({ where }),
+  ]);
 
   if (herbals.length === 0) {
     return (
@@ -43,7 +60,7 @@ async function HerbalList({ search, kategori }: { search?: string; kategori?: st
         </div>
         <h3 className="font-semibold text-lg">Tidak Ada Herbal</h3>
         <p className="text-muted-foreground mt-1 text-sm px-4">
-          {search || kategori 
+          {search || kategori
             ? 'Tidak ditemukan herbal dengan filter tersebut'
             : 'Database herbal masih kosong'}
         </p>
@@ -51,16 +68,29 @@ async function HerbalList({ search, kategori }: { search?: string; kategori?: st
     );
   }
 
+  const totalPages = Math.ceil(totalItems / limit);
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-      {herbals.map((herbal) => (
-        <HerbalCard key={herbal.id} herbal={herbal} />
-      ))}
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        {herbals.map((herbal) => (
+          <HerbalCard key={herbal.id} herbal={herbal} />
+        ))}
+      </div>
+
+      <HerbalPagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={limit}
+        search={search}
+        kategori={kategori}
+      />
     </div>
   );
 }
 
-async function KategoriFilter() {
+async function KategoriFilter({ activeKategori }: { activeKategori?: string }) {
   // Get distinct categories for filter
   const result = await db.herbal.findMany({
     where: { category: { not: null } },
@@ -93,8 +123,8 @@ async function KategoriFilter() {
   return (
     <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
       <a href="/herbals">
-        <Badge 
-          variant="secondary" 
+        <Badge
+          variant={!activeKategori ? 'default' : 'secondary'}
           className="cursor-pointer hover:bg-primary/10 whitespace-nowrap px-3 py-1.5"
         >
           Semua
@@ -102,8 +132,8 @@ async function KategoriFilter() {
       </a>
       {kategoriList.map((kategori) => (
         <a key={kategori} href={`/herbals?kategori=${encodeURIComponent(kategori)}`}>
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant={activeKategori === kategori ? 'default' : 'secondary'}
             className="cursor-pointer hover:bg-primary/10 capitalize whitespace-nowrap px-3 py-1.5"
           >
             {labelMap[kategori] || kategori}
@@ -114,15 +144,38 @@ async function KategoriFilter() {
   );
 }
 
-async function HerbalListWrapper({ searchParams }: { searchParams: Promise<{ search?: string; kategori?: string }> }) {
+async function HerbalListWrapper({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; kategori?: string; page?: string; limit?: string }>;
+}) {
   const params = await searchParams;
-  return <HerbalList search={params.search} kategori={params.kategori} />;
+  const page = Math.max(1, parseInt(params.page || '1') || 1);
+  const limit = Math.max(1, Math.min(100, parseInt(params.limit || String(ITEMS_PER_PAGE)) || ITEMS_PER_PAGE));
+  
+  return (
+    <HerbalList
+      search={params.search}
+      kategori={params.kategori}
+      page={page}
+      limit={limit}
+    />
+  );
+}
+
+async function KategoriFilterWrapper({
+  searchParams,
+}: {
+  searchParams: Promise<{ kategori?: string }>;
+}) {
+  const params = await searchParams;
+  return <KategoriFilter activeKategori={params.kategori} />;
 }
 
 export default function HerbalsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; kategori?: string }>;
+  searchParams: Promise<{ search?: string; kategori?: string; page?: string; limit?: string }>;
 }) {
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -151,7 +204,7 @@ export default function HerbalsPage({
 
       {/* Filter by Category */}
       <Suspense fallback={<div className="h-10" />}>
-        <KategoriFilter />
+        <KategoriFilterWrapper searchParams={searchParams} />
       </Suspense>
 
       {/* Herbal List */}

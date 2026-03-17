@@ -3,19 +3,26 @@ import { db } from '@/lib/db';
 import { NoteCard } from '@/components/medical';
 import { Badge } from '@/components/ui/badge';
 import { FileText } from 'lucide-react';
+import { NotePagination } from './NotePagination';
 
-async function NoteList({ kategori }: { kategori?: string }) {
+const ITEMS_PER_PAGE = 25;
+
+async function NoteList({ kategori, page, limit }: { kategori?: string; page: number; limit: number }) {
   const where: Record<string, unknown> = { isPublished: true };
 
   if (kategori) {
     where.category = kategori;
   }
 
-  const notes = await db.clinicalNote.findMany({
-    where,
-    orderBy: { updatedAt: 'desc' },
-    take: 50,
-  });
+  const [notes, totalItems] = await Promise.all([
+    db.clinicalNote.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    db.clinicalNote.count({ where }),
+  ]);
 
   if (notes.length === 0) {
     return (
@@ -29,16 +36,28 @@ async function NoteList({ kategori }: { kategori?: string }) {
     );
   }
 
+  const totalPages = Math.ceil(totalItems / limit);
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {notes.map((note) => (
-        <NoteCard key={note.id} note={note} />
-      ))}
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {notes.map((note) => (
+          <NoteCard key={note.id} note={note} />
+        ))}
+      </div>
+
+      <NotePagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={limit}
+        kategori={kategori}
+      />
     </div>
   );
 }
 
-async function KategoriFilter() {
+async function KategoriFilter({ activeKategori }: { activeKategori?: string }) {
   const result = await db.clinicalNote.findMany({
     where: { isPublished: true },
     select: { category: true },
@@ -51,14 +70,17 @@ async function KategoriFilter() {
   return (
     <div className="flex flex-wrap gap-2">
       <a href="/notes">
-        <Badge variant="secondary" className="cursor-pointer hover:bg-primary/10">
+        <Badge
+          variant={!activeKategori ? 'default' : 'secondary'}
+          className="cursor-pointer hover:bg-primary/10"
+        >
           Semua
         </Badge>
       </a>
       {kategoriList.map((kategori) => (
         <a key={kategori} href={`/notes?kategori=${encodeURIComponent(kategori)}`}>
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant={activeKategori === kategori ? 'default' : 'secondary'}
             className="cursor-pointer hover:bg-primary/10 capitalize"
           >
             {kategori}
@@ -69,7 +91,32 @@ async function KategoriFilter() {
   );
 }
 
-export default function NotesPage() {
+async function NoteListWrapper({
+  searchParams,
+}: {
+  searchParams: Promise<{ kategori?: string; page?: string; limit?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page || '1') || 1);
+  const limit = Math.max(1, Math.min(100, parseInt(params.limit || String(ITEMS_PER_PAGE)) || ITEMS_PER_PAGE));
+  
+  return <NoteList kategori={params.kategori} page={page} limit={limit} />;
+}
+
+async function KategoriFilterWrapper({
+  searchParams,
+}: {
+  searchParams: Promise<{ kategori?: string }>;
+}) {
+  const params = await searchParams;
+  return <KategoriFilter activeKategori={params.kategori} />;
+}
+
+export default function NotesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ kategori?: string; page?: string; limit?: string }>;
+}) {
   return (
     <div className="space-y-6">
       <div>
@@ -80,11 +127,11 @@ export default function NotesPage() {
       </div>
 
       <Suspense fallback={<div className="h-8" />}>
-        <KategoriFilter />
+        <KategoriFilterWrapper searchParams={searchParams} />
       </Suspense>
 
       <Suspense fallback={<div className="text-center py-8">Memuat...</div>}>
-        <NoteList />
+        <NoteListWrapper searchParams={searchParams} />
       </Suspense>
     </div>
   );

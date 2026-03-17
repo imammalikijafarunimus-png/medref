@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Pill, ChevronRight, Heart, AlertTriangle, Shield } from 'lucide-react';
+import { Pill, ChevronRight, Heart, AlertTriangle, Shield, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Drug } from '@prisma/client';
+import { toast } from 'sonner';
 
 // Extended Drug type with relations
 type DrugWithRelations = Drug & {
@@ -89,6 +90,11 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
         (f: { itemId: string; type: string }) =>
           !(f.itemId === drug.id && f.type === 'drug')
       );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+      setIsFavorite(false);
+      toast.success('Dihapus dari favorit', {
+        description: drug.name,
+      });
     } else {
       favorites.push({
         id: `fav-${Date.now()}`,
@@ -102,10 +108,57 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
         category: drug.category || drug.drugClass,
         addedAt: new Date().toISOString(),
       });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+      setIsFavorite(true);
+      toast.success('Ditambahkan ke favorit', {
+        description: drug.name,
+      });
     }
+  };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
-    setIsFavorite(!isFavorite);
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const shareUrl = `${window.location.origin}/drugs/${drug.id}`;
+    const shareTitle = drug.name;
+    const shareText = `${drug.name}${drug.genericName ? ` (${drug.genericName})` : ''} - ${drug.description?.slice(0, 100) || drug.drugClass || 'Informasi obat lengkap'} di MedRef`;
+
+    // Try native share API first (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        toast.success('Berhasil membagikan', {
+          description: drug.name,
+        });
+      } catch (error) {
+        // User cancelled or error
+        if ((error as Error).name !== 'AbortError') {
+          // Fallback to clipboard
+          copyToClipboard(shareUrl, drug.name);
+        }
+      }
+    } else {
+      // Fallback to clipboard
+      copyToClipboard(shareUrl, drug.name);
+    }
+  };
+
+  const copyToClipboard = async (url: string, name: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Link disalin ke clipboard', {
+        description: `Link ${name} berhasil disalin`,
+      });
+    } catch {
+      toast.error('Gagal menyalin link', {
+        description: 'Silakan salin secara manual',
+      });
+    }
   };
 
   const interactionsCount = drug._count?.interactions || 0;
@@ -141,7 +194,17 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
                 variant="ghost"
                 size="sm"
                 className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                onClick={handleShare}
+                title="Bagikan"
+              >
+                <Share2 className="h-4 w-4 text-muted-foreground" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
                 onClick={toggleFavorite}
+                title={isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit'}
               >
                 <Heart
                   className={cn(
@@ -206,7 +269,7 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
             </p>
           )}
 
-          {/* ✅ FIXED DOSAGE */}
+          {/* Dosage */}
           {(drug.doses?.length ?? 0) > 0 && (
             <div className="mt-2 pt-2 border-t border-border/50">
               <p className="text-[10px] font-medium text-muted-foreground">

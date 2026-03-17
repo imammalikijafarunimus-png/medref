@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyFavorites } from '@/components/medical';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface FavoriteItem {
   id: string;
@@ -45,12 +47,16 @@ export default function FavoritesPage() {
     }
   }, []);
 
-  const removeFavorite = (itemId: string, type: string) => {
+  const removeFavorite = (itemId: string, type: string, name: string) => {
+    const item = favorites.find((f) => f.itemId === itemId && f.type === type);
     const updated = favorites.filter(
       (f) => !(f.itemId === itemId && f.type === type)
     );
     setFavorites(updated);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    toast.success('Dihapus dari favorit', {
+      description: name,
+    });
   };
 
   const filteredFavorites = activeTab === 'all' 
@@ -146,8 +152,9 @@ export default function FavoritesPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeFavorite(item.itemId, item.type)}
+                        onClick={() => removeFavorite(item.itemId, item.type, item.name)}
                         className="text-muted-foreground hover:text-red-500"
+                        aria-label="Hapus dari favorit"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -161,9 +168,4 @@ export default function FavoritesPage() {
       </Tabs>
     </div>
   );
-}
-
-// Helper function (diperlukan untuk cn)
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }

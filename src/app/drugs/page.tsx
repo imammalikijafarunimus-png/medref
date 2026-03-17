@@ -7,8 +7,21 @@ import { DrugCard, DrugListSkeleton } from '@/components/medical';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Pill, Search } from 'lucide-react';
+import { DrugPagination } from './DrugPagination';
 
-async function DrugList({ search, kategori }: { search?: string; kategori?: string }) {
+const ITEMS_PER_PAGE = 25;
+
+async function DrugList({
+  search,
+  kategori,
+  page,
+  limit,
+}: {
+  search?: string;
+  kategori?: string;
+  page: number;
+  limit: number;
+}) {
   const where: Record<string, unknown> = {};
 
   if (kategori) {
@@ -23,18 +36,22 @@ async function DrugList({ search, kategori }: { search?: string; kategori?: stri
     ];
   }
 
-  const drugs = await db.drug.findMany({
-    where,
-    orderBy: { name: 'asc' },
-    take: 50,
-    include: {
-      doses: { take: 1 },
-      indications: { take: 3, orderBy: { priority: 'desc' } },
-      _count: {
-        select: { interactions: true, contraindications: true },
+  const [drugs, totalItems] = await Promise.all([
+    db.drug.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        doses: { take: 1 },
+        indications: { take: 3, orderBy: { priority: 'desc' } },
+        _count: {
+          select: { interactions: true, contraindications: true },
+        },
       },
-    },
-  });
+    }),
+    db.drug.count({ where }),
+  ]);
 
   if (drugs.length === 0) {
     return (
@@ -44,7 +61,7 @@ async function DrugList({ search, kategori }: { search?: string; kategori?: stri
         </div>
         <h3 className="font-semibold text-lg">Tidak Ada Obat</h3>
         <p className="text-muted-foreground mt-1 text-sm px-4">
-          {search || kategori 
+          {search || kategori
             ? 'Tidak ditemukan obat dengan filter tersebut'
             : 'Database obat masih kosong'}
         </p>
@@ -52,16 +69,29 @@ async function DrugList({ search, kategori }: { search?: string; kategori?: stri
     );
   }
 
+  const totalPages = Math.ceil(totalItems / limit);
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-      {drugs.map((drug) => (
-        <DrugCard key={drug.id} drug={drug} />
-      ))}
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        {drugs.map((drug) => (
+          <DrugCard key={drug.id} drug={drug} />
+        ))}
+      </div>
+
+      <DrugPagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={limit}
+        search={search}
+        kategori={kategori}
+      />
     </div>
   );
 }
 
-async function KategoriFilter() {
+async function KategoriFilter({ activeKategori }: { activeKategori?: string }) {
   const result = await db.drug.findMany({
     where: { category: { not: null } },
     select: { category: true },
@@ -108,8 +138,8 @@ async function KategoriFilter() {
   return (
     <div className="flex flex-wrap gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
       <a href="/drugs">
-        <Badge 
-          variant="secondary" 
+        <Badge
+          variant={!activeKategori ? 'default' : 'secondary'}
           className="cursor-pointer hover:bg-primary/10 whitespace-nowrap px-3 py-1.5"
         >
           Semua
@@ -117,8 +147,8 @@ async function KategoriFilter() {
       </a>
       {kategoriList.map((kategori) => (
         <a key={kategori} href={`/drugs?kategori=${encodeURIComponent(kategori)}`}>
-          <Badge 
-            variant="secondary" 
+          <Badge
+            variant={activeKategori === kategori ? 'default' : 'secondary'}
             className="cursor-pointer hover:bg-primary/10 whitespace-nowrap px-3 py-1.5"
           >
             {labelMap[kategori] || kategori}
@@ -129,15 +159,38 @@ async function KategoriFilter() {
   );
 }
 
-async function DrugListWrapper({ searchParams }: { searchParams: Promise<{ search?: string; kategori?: string }> }) {
+async function DrugListWrapper({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string; kategori?: string; page?: string; limit?: string }>;
+}) {
   const params = await searchParams;
-  return <DrugList search={params.search} kategori={params.kategori} />;
+  const page = Math.max(1, parseInt(params.page || '1') || 1);
+  const limit = Math.max(1, Math.min(100, parseInt(params.limit || String(ITEMS_PER_PAGE)) || ITEMS_PER_PAGE));
+  
+  return (
+    <DrugList
+      search={params.search}
+      kategori={params.kategori}
+      page={page}
+      limit={limit}
+    />
+  );
+}
+
+async function KategoriFilterWrapper({
+  searchParams,
+}: {
+  searchParams: Promise<{ kategori?: string }>;
+}) {
+  const params = await searchParams;
+  return <KategoriFilter activeKategori={params.kategori} />;
 }
 
 export default function DrugsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; kategori?: string }>;
+  searchParams: Promise<{ search?: string; kategori?: string; page?: string; limit?: string }>;
 }) {
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -166,7 +219,7 @@ export default function DrugsPage({
 
       {/* Filter by Category */}
       <Suspense fallback={<div className="h-10" />}>
-        <KategoriFilter />
+        <KategoriFilterWrapper searchParams={searchParams} />
       </Suspense>
 
       {/* Drug List */}

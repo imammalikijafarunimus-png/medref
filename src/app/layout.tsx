@@ -6,6 +6,8 @@ import { BottomNav } from "@/components/medical/bottom-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { Toaster } from "@/components/ui/sonner";
+import { DynamicYear } from "@/components/DynamicYear";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -81,32 +83,14 @@ export default function RootLayout({
               {children}
             </main>
             <footer className="hidden md:block border-t py-4 text-center text-sm text-muted-foreground">
-              <p>© 2024 MedRef - Sistem Referensi Klinis Personal</p>
+              <p>© <DynamicYear /> MedRef - Sistem Referensi Klinis Personal</p>
             </footer>
             <BottomNav />
           </div>
           <PWAInstallPrompt />
-          <Toaster />
+          <Toaster position="top-center" richColors closeButton />
+          <ServiceWorkerRegister />
         </ThemeProvider>
-        
-        {/* Service Worker Registration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('SW registered: ', registration);
-                    })
-                    .catch(function(registrationError) {
-                      console.log('SW registration failed: ', registrationError);
-                    });
-                });
-              }
-            `,
-          }}
-        />
       </body>
     </html>
   );

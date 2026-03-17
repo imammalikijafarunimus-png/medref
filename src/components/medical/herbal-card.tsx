@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Leaf, ChevronRight, Heart, FlaskConical, AlertTriangle } from 'lucide-react';
+import { Leaf, ChevronRight, Heart, FlaskConical, AlertTriangle, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface HerbalCardProps {
   herbal: {
@@ -122,6 +123,11 @@ export function HerbalCard({ herbal }: HerbalCardProps) {
       favorites = favorites.filter(
         (f: { itemId: string; type: string }) => !(f.itemId === herbal.id && f.type === 'herbal')
       );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+      setIsFavorite(false);
+      toast.success('Dihapus dari favorit', {
+        description: herbal.name,
+      });
     } else {
       favorites.push({
         id: `fav-${Date.now()}`,
@@ -132,10 +138,57 @@ export function HerbalCard({ herbal }: HerbalCardProps) {
         category: herbal.category,
         addedAt: new Date().toISOString(),
       });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+      setIsFavorite(true);
+      toast.success('Ditambahkan ke favorit', {
+        description: herbal.name,
+      });
     }
+  };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
-    setIsFavorite(!isFavorite);
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const shareUrl = `${window.location.origin}/herbals/${herbal.id}`;
+    const shareTitle = herbal.name;
+    const shareText = `${herbal.name}${herbal.latinName ? ` (${herbal.latinName})` : ''} - Obat herbal di MedRef`;
+
+    // Try native share API first (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        toast.success('Berhasil membagikan', {
+          description: herbal.name,
+        });
+      } catch (error) {
+        // User cancelled or error
+        if ((error as Error).name !== 'AbortError') {
+          // Fallback to clipboard
+          copyToClipboard(shareUrl, herbal.name);
+        }
+      }
+    } else {
+      // Fallback to clipboard
+      copyToClipboard(shareUrl, herbal.name);
+    }
+  };
+
+  const copyToClipboard = async (url: string, name: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Link disalin ke clipboard', {
+        description: `Link ${name} berhasil disalin`,
+      });
+    } catch {
+      toast.error('Gagal menyalin link', {
+        description: 'Silakan salin secara manual',
+      });
+    }
   };
 
   const interactionsCount = herbal.interactions?.length || 0;
@@ -164,9 +217,18 @@ export function HerbalCard({ herbal }: HerbalCardProps) {
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <button
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md text-sm font-medium"
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                onClick={handleShare}
+                aria-label="Bagikan"
+                title="Bagikan"
+              >
+                <Share2 className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <button
+                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity inline-flex items-center justify-center rounded-md text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                 onClick={toggleFavorite}
                 aria-label={isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit'}
+                title={isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit'}
               >
                 <Heart
                   className={cn(

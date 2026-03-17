@@ -5,9 +5,10 @@ import {
   AlertTriangle, 
   Leaf, 
   FileText, 
-  Activity, 
   Heart,
-  ChevronRight 
+  ChevronRight,
+  Beaker,
+  Stethoscope
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -17,7 +18,7 @@ interface QuickAccessCardProps {
   description: string;
   href: string;
   icon: string;
-  color: 'blue' | 'orange' | 'red' | 'green' | 'purple' | 'teal';
+  color: 'blue' | 'orange' | 'red' | 'green' | 'purple' | 'teal' | 'cyan';
   count?: number;
 }
 
@@ -27,8 +28,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   alert: AlertTriangle,
   leaf: Leaf,
   file: FileText,
-  stethoscope: Activity,
+  stethoscope: Stethoscope,
   heart: Heart,
+  beaker: Beaker,
 };
 
 const colorMap: Record<string, { bg: string; text: string; border: string }> = {
@@ -61,6 +63,11 @@ const colorMap: Record<string, { bg: string; text: string; border: string }> = {
     bg: 'bg-teal-50 dark:bg-teal-950/30',
     text: 'text-teal-600 dark:text-teal-400',
     border: 'hover:border-teal-300 dark:hover:border-teal-700',
+  },
+  cyan: {
+    bg: 'bg-cyan-50 dark:bg-cyan-950/30',
+    text: 'text-cyan-600 dark:text-cyan-400',
+    border: 'hover:border-cyan-300 dark:hover:border-cyan-700',
   },
 };
 
