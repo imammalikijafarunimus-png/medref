@@ -3,70 +3,108 @@ import { ambilJumlahData } from '@/lib/data';
 import { SearchBar } from '@/components/medical/search-bar';
 import { QuickAccessCard } from '@/components/medical/quick-access-card';
 import { TimeGreeting } from '@/components/medical/greeting';
+import { PopularSearchTags } from '@/components/medical/popular-search-tags';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 // ─────────────────────────────────────────────────────────────────
+// Background Canvas (orbs + grid)
+// ─────────────────────────────────────────────────────────────────
+
+function BackgroundCanvas() {
+  return (
+    <>
+      {/* Animated gradient orbs */}
+      <div className="bg-canvas" aria-hidden>
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+      </div>
+      {/* Grid overlay */}
+      <div className="grid-overlay" aria-hidden />
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
 // Hero Section
 // ─────────────────────────────────────────────────────────────────
 
-function BagianPencarian() {
+function BagianHero() {
   return (
-    <div className="relative w-full max-w-2xl mx-auto">
-      {/* Brand + Greeting */}
-      <div className="text-center mb-7 md:mb-9 space-y-3">
-        {/* Logo mark + wordmark */}
-        <div className="flex items-center justify-center gap-2.5">
-          {/*
-           * Heartbeat pulse icon — evokes a clinical monitor.
-           * Simple, recognizable, and appropriate for medical context.
-           */}
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            fill="none"
-            strokeWidth={2.25}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-6 w-6 text-primary shrink-0"
-          >
-            <path d="M2 12h3l3-8 4 16 3-8h7" stroke="currentColor" />
-          </svg>
-
-          {/*
-           * Wordmark: Subtle gradient as brand identity.
-           * Professional yet distinctive for a medical app.
-           */}
-          <h1
-            className={cn(
-              'text-3xl sm:text-4xl font-bold tracking-tight',
-              'bg-gradient-to-r from-primary via-primary to-cyan-600',
-              'bg-clip-text text-transparent'
-            )}
-          >
-            MedRef
-          </h1>
-        </div>
-
-        {/* Tagline — legible size for quick glance in clinical setting */}
-        <p className="text-sm text-muted-foreground font-medium">
-          Sistem Referensi Klinis Personal
-        </p>
-
-        {/* Time-based greeting (client component) */}
-        <div className="flex justify-center pt-1">
-          <TimeGreeting />
-        </div>
+    <section className="flex flex-col items-center text-center pt-10 sm:pt-14 pb-8 sm:pb-10">
+      {/* Badge */}
+      <div className="hero-badge fade-up" style={{ animationDelay: '0ms' }}>
+        <span className="hero-badge-dot" aria-hidden />
+        Referensi Klinis Terpadu
       </div>
 
-      {/* Search — visually dominant, the primary CTA */}
-      <SearchBar
-        placeholder="Cari obat, herbal, gejala, catatan klinis..."
-        className="w-full"
-        autoFocus={false}
-      />
+      {/* Heading */}
+      <h1
+        className="hero-heading mt-6 max-w-2xl fade-up"
+        style={{ animationDelay: '100ms' }}
+      >
+        Informasi klinis<br /><em>tepat dan cepat</em>
+      </h1>
+
+      {/* Subtitle */}
+      <p
+        className="mt-4 text-base sm:text-lg text-muted-foreground max-w-md leading-relaxed fade-up"
+        style={{ animationDelay: '200ms' }}
+      >
+        Database obat, herbal, laboratorium, dan panduan klinis yang selalu siap di ujung jari.
+      </p>
+
+      {/* Greeting */}
+      <div className="mt-2 fade-up" style={{ animationDelay: '250ms' }}>
+        <TimeGreeting />
+      </div>
+
+      {/* Search */}
+      <div
+        className="w-full max-w-xl mt-10 fade-up"
+        style={{ animationDelay: '300ms' }}
+      >
+        <SearchBar
+          placeholder="Cari obat, herbal, gejala, catatan klinis..."
+          className="w-full"
+          autoFocus={false}
+        />
+
+        {/* Popular tags */}
+        <PopularSearchTags className="mt-3" />
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Stats Strip
+// ─────────────────────────────────────────────────────────────────
+
+async function StatsStrip() {
+  const jumlah = await ambilJumlahData();
+
+  const stats = [
+    { num: jumlah.drugsCount.toLocaleString(), label: 'Database Obat' },
+    { num: jumlah.herbalsCount.toLocaleString(), label: 'Obat Herbal' },
+    { num: '140+', label: 'Nilai Normal Lab' },
+    { num: jumlah.notesCount.toLocaleString(), label: 'Catatan Klinis' },
+  ];
+
+  return (
+    <div
+      className="stats-strip w-full max-w-3xl mx-auto mt-10 fade-up"
+      style={{ animationDelay: '400ms' }}
+    >
+      {stats.map((stat, idx) => (
+        <div key={idx} className="stat-item">
+          <div className="stat-number">{stat.num}</div>
+          <div className="stat-label">{stat.label}</div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -77,9 +115,9 @@ function BagianPencarian() {
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 mb-4 sm:mb-5">
+    <div className="flex items-center gap-4 mb-5">
       <div className="h-px flex-1 bg-border" />
-      <span className="text-xs font-medium text-muted-foreground/70 uppercase tracking-widest px-1 select-none">
+      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.12em] select-none">
         {children}
       </span>
       <div className="h-px flex-1 bg-border" />
@@ -97,7 +135,7 @@ async function BagianAksesCepat() {
   const menuAksesCepat = [
     {
       title: 'Database Obat',
-      description: 'Cari obat, dosis, interaksi',
+      description: 'Cari obat, dosis, interaksi, kontraindikasi',
       href: '/drugs',
       icon: 'pill',
       color: 'blue' as const,
@@ -105,28 +143,28 @@ async function BagianAksesCepat() {
     },
     {
       title: 'Cek Interaksi',
-      description: 'Periksa interaksi obat',
+      description: 'Periksa interaksi antar obat secara real-time',
       href: '/interaksi',
       icon: 'alert',
       color: 'red' as const,
     },
     {
       title: 'Kalkulator Medis',
-      description: 'Dosis, BMI, GFR, kalori',
+      description: 'Hitung dosis, BMI, GFR, kalori, dan lainnya',
       href: '/kalkulator',
       icon: 'calculator',
       color: 'orange' as const,
     },
     {
       title: 'Nilai Normal Lab',
-      description: 'Referensi nilai laboratorium',
+      description: 'Referensi nilai laboratorium lengkap berbasis bukti',
       href: '/lab-values',
       icon: 'beaker',
       color: 'cyan' as const,
     },
     {
       title: 'Obat Herbal',
-      description: 'Referensi herbal berbasis bukti',
+      description: 'Referensi herbal berbasis bukti ilmiah terkini',
       href: '/herbals',
       icon: 'leaf',
       color: 'green' as const,
@@ -134,7 +172,7 @@ async function BagianAksesCepat() {
     },
     {
       title: 'Panduan Gejala',
-      description: 'Cari obat berdasarkan gejala',
+      description: 'Temukan obat dan diagnosis berdasarkan gejala',
       href: '/symptoms',
       icon: 'stethoscope',
       color: 'teal' as const,
@@ -142,7 +180,7 @@ async function BagianAksesCepat() {
     },
     {
       title: 'Catatan Klinis',
-      description: 'Panduan referensi cepat',
+      description: 'Panduan referensi dan protokol klinis cepat',
       href: '/notes',
       icon: 'file',
       color: 'purple' as const,
@@ -150,7 +188,7 @@ async function BagianAksesCepat() {
     },
     {
       title: 'Favorit',
-      description: 'Item tersimpan Anda',
+      description: 'Item yang tersimpan dan sering diakses',
       href: '/favorites',
       icon: 'heart',
       color: 'rose' as const,
@@ -160,20 +198,18 @@ async function BagianAksesCepat() {
   return (
     <section
       aria-label="Akses Cepat"
-      className="w-full max-w-5xl mx-auto mt-8 sm:mt-10"
+      className="w-full max-w-5xl mx-auto mt-12 sm:mt-16"
     >
-      <SectionHeading>Akses Cepat</SectionHeading>
+      <div className="fade-up" style={{ animationDelay: '500ms' }}>
+        <SectionHeading>Akses Cepat</SectionHeading>
+      </div>
 
-      {/*
-       * Grid: 2 cols mobile → 3 cols tablet → 4 cols desktop.
-       * The sm breakpoint prevents the wide-and-only-two-column layout.
-       */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {menuAksesCepat.map((item, idx) => (
           <div
             key={item.href}
-            className="motion-safe:animate-[fadeSlideIn_0.3s_ease-out_both]"
-            style={{ animationDelay: `${idx * 35}ms` }}
+            className="fade-up"
+            style={{ animationDelay: `${550 + idx * 60}ms` }}
           >
             <QuickAccessCard
               title={item.title}
@@ -196,44 +232,47 @@ async function BagianAksesCepat() {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-xl border bg-card p-4 sm:p-5 min-h-[130px]">
-      <div className="flex items-start justify-between">
-        <Skeleton className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl" />
-        <Skeleton className="h-4 w-4 mt-0.5" />
-      </div>
-      <Skeleton className="h-4 w-3/4 mt-3.5" />
+    <div className="quick-card">
+      <Skeleton className="h-11 w-11 rounded-xl" />
+      <Skeleton className="h-4 w-3/4 mt-4" />
       <Skeleton className="h-3 w-full mt-2" />
-      <Skeleton className="h-3 w-2/3 mt-1.5" />
-      <Skeleton className="h-5 w-16 rounded-full mt-auto pt-3" />
+      <Skeleton className="h-3 w-2/3 mt-1" />
+      <div className="quick-card-footer">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-3 w-3" />
+      </div>
     </div>
   );
 }
 
 function SkeletonAksesCepat() {
   return (
-    <section
-      aria-label="Memuat akses cepat"
-      aria-busy="true"
-      className="w-full max-w-5xl mx-auto mt-8 sm:mt-10"
-    >
-      <div className="flex items-center gap-3 mb-4 sm:mb-5">
+    <section className="w-full max-w-5xl mx-auto mt-12 sm:mt-16">
+      <div className="flex items-center gap-4 mb-5">
         <div className="h-px flex-1 bg-border" />
         <Skeleton className="h-3 w-20 rounded" />
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="motion-safe:animate-[fadeSlideIn_0.3s_ease-out_both]"
-            style={{ animationDelay: `${i * 50}ms` }}
-          >
-            <SkeletonCard />
-          </div>
+          <SkeletonCard key={i} />
         ))}
       </div>
     </section>
+  );
+}
+
+function SkeletonStats() {
+  return (
+    <div className="stats-strip w-full max-w-3xl mx-auto mt-10">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="stat-item">
+          <Skeleton className="h-7 w-16 mx-auto" />
+          <Skeleton className="h-3 w-20 mx-auto mt-2" />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -243,12 +282,25 @@ function SkeletonAksesCepat() {
 
 export default function HalamanUtama() {
   return (
-    <div className="flex flex-col items-center w-full px-4 py-10 sm:py-12 md:py-14">
-      <BagianPencarian />
+    <div className="relative min-h-screen">
+      {/* Background canvas */}
+      <BackgroundCanvas />
 
-      <Suspense fallback={<SkeletonAksesCepat />}>
-        <BagianAksesCepat />
-      </Suspense>
+      {/* Main content */}
+      <div className="relative z-10 flex flex-col items-center w-full px-4 sm:px-6 py-6">
+        <BagianHero />
+
+        <Suspense fallback={<SkeletonStats />}>
+          <StatsStrip />
+        </Suspense>
+
+        <Suspense fallback={<SkeletonAksesCepat />}>
+          <BagianAksesCepat />
+        </Suspense>
+
+        {/* Bottom spacer */}
+        <div className="h-16 sm:h-20" />
+      </div>
     </div>
   );
 }
