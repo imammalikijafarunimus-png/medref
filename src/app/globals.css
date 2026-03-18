@@ -991,23 +991,47 @@
   /* Premium hero heading */
   .hero-heading {
     font-size: clamp(2.5rem, 7vw, 4rem);
-    font-weight: 500;
+    font-weight: 300;
     line-height: 1.1;
     letter-spacing: -0.03em;
   }
 
   .hero-heading em {
     font-style: normal;
-    background: linear-gradient(90deg, var(--primary), oklch(70% 0.15 195), var(--primary));
-    background-size: 200% auto;
+    /* Light mode: teal gelap → indigo — hue beda jauh, semua kontras di bg terang */
+    background: linear-gradient(
+      90deg,
+      oklch(40% 0.20 200) 0%,
+      oklch(45% 0.22 270) 40%,
+      oklch(42% 0.18 220) 65%,
+      oklch(40% 0.20 200) 100%
+    );
+    background-size: 250% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: shimmer 4s linear infinite;
+    animation: shimmer 5s linear infinite;
+  }
+
+  /* Dark mode: warna lebih terang, teal cerah → biru-ungu cerah */
+  :is(.dark) .hero-heading em {
+    background: linear-gradient(
+      90deg,
+      oklch(75% 0.18 195) 0%,
+      oklch(72% 0.22 275) 40%,
+      oklch(78% 0.16 215) 65%,
+      oklch(75% 0.18 195) 100%
+    );
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 5s linear infinite;
   }
 
   @keyframes shimmer {
-    to { background-position: 200% center; }
+    from { background-position: 0% center; }
+    to { background-position: 250% center; }
   }
 
   /* Hero badge with pulse */
