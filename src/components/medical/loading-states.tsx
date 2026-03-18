@@ -2,24 +2,32 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Skeleton untuk kartu obat
+// Skeleton untuk kartu obat — matches DrugCard structure
 export function DrugCardSkeleton() {
   return (
-    <div className="rounded-lg border p-4">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-10 w-10 rounded-lg" />
-          <div>
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-24 mt-1" />
+    <div className="rounded-xl border bg-card min-h-[120px] animate-pulse overflow-hidden">
+      <div className="flex flex-col h-full p-4">
+        {/* Header: Name + Generic + Category */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+          <Skeleton className="h-5 w-5 rounded" />
+        </div>
+        
+        {/* Body: Indication preview */}
+        <Skeleton className="h-3 w-full mt-2" />
+        
+        {/* Footer */}
+        <div className="mt-auto pt-3 flex items-center justify-between">
+          <Skeleton className="h-4 w-24 rounded-full" />
+          <div className="flex gap-1">
+            <Skeleton className="h-7 w-7 rounded-lg" />
+            <Skeleton className="h-7 w-7 rounded-lg" />
           </div>
         </div>
-        <Skeleton className="h-4 w-4" />
-      </div>
-      <Skeleton className="h-6 w-20 mt-3" />
-      <div className="mt-3 pt-3 border-t">
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-2/3 mt-1" />
       </div>
     </div>
   );
@@ -57,21 +65,52 @@ export function DrugDetailSkeleton() {
   );
 }
 
-// Skeleton untuk kartu herbal
+// Skeleton untuk kartu herbal — matches HerbalCard structure
 export function HerbalCardSkeleton() {
   return (
-    <div className="rounded-lg border p-4">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-10 w-10 rounded-lg bg-green-100" />
-          <div>
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-28 mt-1 italic" />
+    <div className="rounded-xl border bg-card overflow-hidden animate-pulse">
+      {/* Safety stripe placeholder */}
+      <Skeleton className="h-0.5 w-full rounded-none" />
+      
+      <div className="p-3 sm:p-4 flex flex-col gap-2.5">
+        {/* Row 1: Icon + Name + Actions */}
+        <div className="flex items-start gap-3">
+          <Skeleton className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex-shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+          <div className="flex gap-1">
+            <Skeleton className="h-6 w-6 rounded-full" />
+            <Skeleton className="h-6 w-6 rounded-full" />
           </div>
         </div>
-        <Skeleton className="h-4 w-4" />
+        
+        {/* Row 2: Badges */}
+        <div className="flex gap-1.5">
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-14 rounded-full" />
+          <Skeleton className="h-5 w-10 rounded-full" />
+        </div>
+        
+        {/* Row 3: Stats */}
+        <div className="flex gap-2">
+          <Skeleton className="h-4 w-16 rounded" />
+          <Skeleton className="h-4 w-16 rounded" />
+        </div>
+        
+        {/* Row 4: Indications */}
+        <div className="pt-2 border-t border-border/50 space-y-1.5">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 flex-1 rounded" />
+            <Skeleton className="h-3 w-12 rounded" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 flex-1 rounded" />
+            <Skeleton className="h-3 w-14 rounded" />
+          </div>
+        </div>
       </div>
-      <Skeleton className="h-6 w-20 mt-3" />
     </div>
   );
 }
