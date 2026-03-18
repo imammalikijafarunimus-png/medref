@@ -7,6 +7,16 @@ export { NoteCard } from './note-card';
 export { Header } from './header';
 export { BottomNav } from './bottom-nav';
 
+// Search components
+export { SearchResultsDropdown } from './search-results-dropdown';
+export { SearchResultsSkeleton } from './search-results-dropdown';
+export { SearchResultItem, SearchCategoryHeader } from './search-result-item';
+export {
+  SearchEmptyState,
+  NoResultsState,
+  useRecentSearches,
+} from './search-empty-state';
+
 // Loading states
 export {
   DrugCardSkeleton,

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { db } from '@/lib/db';
+import { trackView } from '@/lib/actions/track';
 
 // Force dynamic rendering to prevent build-time database access
 export const dynamic = 'force-dynamic';
@@ -176,6 +177,9 @@ export default async function HerbalDetailPage({
   if (!herbal) {
     notFound();
   }
+
+  // Track view (fire-and-forget)
+  trackView('herbal', id).catch(() => {});
 
   const safetyInfo = herbal.safetyRating 
     ? warnaKeamanan[herbal.safetyRating.toLowerCase()] 

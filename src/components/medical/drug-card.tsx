@@ -45,12 +45,14 @@ type CategoryColors = {
   iconBg: string;
   iconText: string;
   badge: string;
+  stripe: string;
 };
 
 const FALLBACK_COLORS: CategoryColors = {
   iconBg: 'bg-slate-100 dark:bg-slate-800/60',
   iconText: 'text-slate-500 dark:text-slate-400',
   badge: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+  stripe: 'bg-slate-300 dark:bg-slate-600',
 };
 
 const warnaKategori: Record<string, CategoryColors> = {
@@ -58,151 +60,181 @@ const warnaKategori: Record<string, CategoryColors> = {
     iconBg: 'bg-emerald-100 dark:bg-emerald-900/40',
     iconText: 'text-emerald-600 dark:text-emerald-300',
     badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+    stripe: 'bg-emerald-400 dark:bg-emerald-500',
   },
   antibiotic: {
     iconBg: 'bg-rose-100 dark:bg-rose-900/40',
     iconText: 'text-rose-600 dark:text-rose-300',
     badge: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+    stripe: 'bg-rose-400 dark:bg-rose-500',
   },
   antibiotik: {
     iconBg: 'bg-rose-100 dark:bg-rose-900/40',
     iconText: 'text-rose-600 dark:text-rose-300',
     badge: 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+    stripe: 'bg-rose-400 dark:bg-rose-500',
   },
   antiviral: {
     iconBg: 'bg-violet-100 dark:bg-violet-900/40',
     iconText: 'text-violet-600 dark:text-violet-300',
     badge: 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    stripe: 'bg-violet-400 dark:bg-violet-500',
   },
   antifungal: {
     iconBg: 'bg-orange-100 dark:bg-orange-900/40',
     iconText: 'text-orange-600 dark:text-orange-300',
     badge: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+    stripe: 'bg-orange-400 dark:bg-orange-500',
   },
   antihypertensive: {
     iconBg: 'bg-pink-100 dark:bg-pink-900/40',
     iconText: 'text-pink-600 dark:text-pink-300',
     badge: 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
+    stripe: 'bg-pink-400 dark:bg-pink-500',
   },
   cardiovascular: {
     iconBg: 'bg-pink-100 dark:bg-pink-900/40',
     iconText: 'text-pink-600 dark:text-pink-300',
     badge: 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
+    stripe: 'bg-pink-400 dark:bg-pink-500',
   },
   kardiovaskular: {
     iconBg: 'bg-pink-100 dark:bg-pink-900/40',
     iconText: 'text-pink-600 dark:text-pink-300',
     badge: 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
+    stripe: 'bg-pink-400 dark:bg-pink-500',
   },
   respiratory: {
     iconBg: 'bg-cyan-100 dark:bg-cyan-900/40',
     iconText: 'text-cyan-600 dark:text-cyan-300',
     badge: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+    stripe: 'bg-cyan-400 dark:bg-cyan-500',
   },
   respirasi: {
     iconBg: 'bg-cyan-100 dark:bg-cyan-900/40',
     iconText: 'text-cyan-600 dark:text-cyan-300',
     badge: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
+    stripe: 'bg-cyan-400 dark:bg-cyan-500',
   },
   gastrointestinal: {
     iconBg: 'bg-amber-100 dark:bg-amber-900/40',
     iconText: 'text-amber-600 dark:text-amber-300',
     badge: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    stripe: 'bg-amber-400 dark:bg-amber-500',
   },
   neurology: {
     iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
     iconText: 'text-indigo-600 dark:text-indigo-300',
     badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+    stripe: 'bg-indigo-400 dark:bg-indigo-500',
   },
   neurologi: {
     iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
     iconText: 'text-indigo-600 dark:text-indigo-300',
     badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+    stripe: 'bg-indigo-400 dark:bg-indigo-500',
   },
   psychiatry: {
     iconBg: 'bg-violet-100 dark:bg-violet-900/40',
     iconText: 'text-violet-600 dark:text-violet-300',
     badge: 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    stripe: 'bg-violet-400 dark:bg-violet-500',
   },
   psikiatri: {
     iconBg: 'bg-violet-100 dark:bg-violet-900/40',
     iconText: 'text-violet-600 dark:text-violet-300',
     badge: 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    stripe: 'bg-violet-400 dark:bg-violet-500',
   },
   antidiabetic: {
     iconBg: 'bg-sky-100 dark:bg-sky-900/40',
     iconText: 'text-sky-600 dark:text-sky-300',
     badge: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
+    stripe: 'bg-sky-400 dark:bg-sky-500',
   },
   endocrine: {
     iconBg: 'bg-purple-100 dark:bg-purple-900/40',
     iconText: 'text-purple-600 dark:text-purple-300',
     badge: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    stripe: 'bg-purple-400 dark:bg-purple-500',
   },
   hormonal: {
     iconBg: 'bg-purple-100 dark:bg-purple-900/40',
     iconText: 'text-purple-600 dark:text-purple-300',
     badge: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    stripe: 'bg-purple-400 dark:bg-purple-500',
   },
   diuretic: {
     iconBg: 'bg-teal-100 dark:bg-teal-900/40',
     iconText: 'text-teal-600 dark:text-teal-300',
     badge: 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+    stripe: 'bg-teal-400 dark:bg-teal-500',
   },
   anticoagulant: {
     iconBg: 'bg-red-100 dark:bg-red-900/40',
     iconText: 'text-red-600 dark:text-red-300',
     badge: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    stripe: 'bg-red-400 dark:bg-red-500',
   },
   antiarrhythmic: {
     iconBg: 'bg-pink-100 dark:bg-pink-900/40',
     iconText: 'text-pink-600 dark:text-pink-300',
     badge: 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
+    stripe: 'bg-pink-400 dark:bg-pink-500',
   },
   'lipid-lowering': {
     iconBg: 'bg-orange-100 dark:bg-orange-900/40',
     iconText: 'text-orange-600 dark:text-orange-300',
     badge: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+    stripe: 'bg-orange-400 dark:bg-orange-500',
   },
   antianginal: {
     iconBg: 'bg-pink-100 dark:bg-pink-900/40',
     iconText: 'text-pink-600 dark:text-pink-300',
     badge: 'bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
+    stripe: 'bg-pink-400 dark:bg-pink-500',
   },
   antimigraine: {
     iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
     iconText: 'text-indigo-600 dark:text-indigo-300',
     badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+    stripe: 'bg-indigo-400 dark:bg-indigo-500',
   },
   antigout: {
     iconBg: 'bg-amber-100 dark:bg-amber-900/40',
     iconText: 'text-amber-600 dark:text-amber-300',
     badge: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    stripe: 'bg-amber-400 dark:bg-amber-500',
   },
   antihistamine: {
     iconBg: 'bg-sky-100 dark:bg-sky-900/40',
     iconText: 'text-sky-600 dark:text-sky-300',
     badge: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
+    stripe: 'bg-sky-400 dark:bg-sky-500',
   },
   antiemetic: {
     iconBg: 'bg-emerald-100 dark:bg-emerald-900/40',
     iconText: 'text-emerald-600 dark:text-emerald-300',
     badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+    stripe: 'bg-emerald-400 dark:bg-emerald-500',
   },
   laxative: {
     iconBg: 'bg-lime-100 dark:bg-lime-900/40',
     iconText: 'text-lime-600 dark:text-lime-300',
     badge: 'bg-lime-50 text-lime-700 dark:bg-lime-900/30 dark:text-lime-300',
+    stripe: 'bg-lime-400 dark:bg-lime-500',
   },
   thyroid: {
     iconBg: 'bg-purple-100 dark:bg-purple-900/40',
     iconText: 'text-purple-600 dark:text-purple-300',
     badge: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+    stripe: 'bg-purple-400 dark:bg-purple-500',
   },
   corticosteroid: {
     iconBg: 'bg-amber-100 dark:bg-amber-900/40',
     iconText: 'text-amber-600 dark:text-amber-300',
     badge: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    stripe: 'bg-amber-400 dark:bg-amber-500',
   },
 };
 
@@ -296,6 +328,7 @@ function SafetyBadge({
         <ShieldX className="h-2.5 w-2.5" aria-hidden />
       )}
       <span className="font-numeric">{count}</span>
+      <span>{isInteraction ? 'interaksi' : 'kontraindikasi'}</span>
     </span>
   );
 }
@@ -415,22 +448,11 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
           'h-full overflow-hidden',
         )}
       >
-        {/*
-         * Safety warning stripe — visible only when warnings exist.
-         * A 3px colored top border provides instant visual triage
-         * before the user reads anything.
-         */}
-        {hasSafetyWarnings && (
-          <div
-            className={cn(
-              'h-0.5 w-full',
-              contraindicationsCount > 0
-                ? 'bg-rose-400 dark:bg-rose-500'
-                : 'bg-amber-400 dark:bg-amber-500',
-            )}
-            aria-hidden
-          />
-        )}
+        {/* Category color stripe — always visible as visual accent */}
+        <div
+          className={cn('h-0.5 w-full', colors.stripe)}
+          aria-hidden
+        />
 
         <div className="p-3 sm:p-4 flex flex-col gap-2.5 h-full">
           {/* ── Row 1: Icon + Name + Actions ─────────────────────── */}
@@ -542,9 +564,6 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
            */}
           {hasSafetyWarnings && (
             <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-border/50">
-              <span className="text-[10px] text-muted-foreground mr-0.5">
-                Peringatan:
-              </span>
               <SafetyBadge count={interactionsCount} variant="interaction" />
               <SafetyBadge
                 count={contraindicationsCount}
