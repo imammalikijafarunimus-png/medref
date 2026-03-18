@@ -1,4 +1,3 @@
-// /src/components/medical/quick-access-card.tsx
 import Link from 'next/link';
 import {
   Pill,
@@ -13,7 +12,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface QuickAccessCardProps {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export interface QuickAccessCardProps {
   title: string;
   description: string;
   href: string;
@@ -21,6 +22,8 @@ interface QuickAccessCardProps {
   color: 'blue' | 'orange' | 'red' | 'green' | 'purple' | 'teal' | 'cyan';
   count?: number;
 }
+
+// ─── Icon Map ─────────────────────────────────────────────────────────────────
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   pill: Pill,
@@ -33,81 +36,120 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   beaker: Beaker,
 };
 
-/**
- * Each color variant defines:
- * - iconBg: gradient background for the icon container
- * - iconText: icon color
- * - glow: box-shadow color on hover (via Tailwind arbitrary)
- * - badgeBg / badgeText: count badge
- * - border: hover border accent
- * - shimmer: gradient overlay direction (for card shine effect)
- */
-const colorMap = {
+// ─── Color Map ────────────────────────────────────────────────────────────────
+// Each entry provides tokens for icon, border, shadow, and badge styling
+
+interface ColorTokens {
+  iconGradient: string;
+  iconText: string;
+  borderHover: string;
+  cardShadow: string;
+  badgeBg: string;
+  badgeText: string;
+  badgeBorder: string;
+  accentGradient: string;
+}
+
+const colorMap: Record<string, ColorTokens> = {
   blue: {
-    iconBg: 'bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-900/50 dark:to-sky-800/40',
-    iconText: 'text-sky-600 dark:text-sky-300',
-    glow: 'hover:shadow-sky-100/80 dark:hover:shadow-sky-900/50',
-    badgeBg: 'bg-sky-50 dark:bg-sky-900/40',
-    badgeText: 'text-sky-600 dark:text-sky-300',
-    border: 'hover:border-sky-200 dark:hover:border-sky-700',
-    accent: 'from-sky-500/10',
+    iconGradient:
+      'bg-gradient-to-br from-sky-100 to-sky-50 dark:from-sky-900/40 dark:to-sky-950/20',
+    iconText: 'text-sky-600 dark:text-sky-400',
+    borderHover: 'hover:border-sky-300 dark:hover:border-sky-700',
+    cardShadow:
+      'motion-safe:hover:shadow-sky-500/10 dark:motion-safe:hover:shadow-sky-500/5',
+    badgeBg: 'bg-sky-50 dark:bg-sky-950/40',
+    badgeText: 'text-sky-700 dark:text-sky-300',
+    badgeBorder: 'border-sky-200 dark:border-sky-800',
+    accentGradient: 'from-sky-500 to-sky-400',
   },
   orange: {
-    iconBg: 'bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/50 dark:to-amber-800/40',
-    iconText: 'text-amber-600 dark:text-amber-300',
-    glow: 'hover:shadow-amber-100/80 dark:hover:shadow-amber-900/50',
-    badgeBg: 'bg-amber-50 dark:bg-amber-900/40',
-    badgeText: 'text-amber-600 dark:text-amber-300',
-    border: 'hover:border-amber-200 dark:hover:border-amber-700',
-    accent: 'from-amber-500/10',
+    iconGradient:
+      'bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/40 dark:to-amber-950/20',
+    iconText: 'text-amber-600 dark:text-amber-400',
+    borderHover: 'hover:border-amber-300 dark:hover:border-amber-700',
+    cardShadow:
+      'motion-safe:hover:shadow-amber-500/10 dark:motion-safe:hover:shadow-amber-500/5',
+    badgeBg: 'bg-amber-50 dark:bg-amber-950/40',
+    badgeText: 'text-amber-700 dark:text-amber-300',
+    badgeBorder: 'border-amber-200 dark:border-amber-800',
+    accentGradient: 'from-amber-500 to-amber-400',
   },
   red: {
-    iconBg: 'bg-gradient-to-br from-rose-100 to-rose-200 dark:from-rose-900/50 dark:to-rose-800/40',
-    iconText: 'text-rose-600 dark:text-rose-300',
-    glow: 'hover:shadow-rose-100/80 dark:hover:shadow-rose-900/50',
-    badgeBg: 'bg-rose-50 dark:bg-rose-900/40',
-    badgeText: 'text-rose-600 dark:text-rose-300',
-    border: 'hover:border-rose-200 dark:hover:border-rose-700',
-    accent: 'from-rose-500/10',
+    iconGradient:
+      'bg-gradient-to-br from-rose-100 to-rose-50 dark:from-rose-900/40 dark:to-rose-950/20',
+    iconText: 'text-rose-600 dark:text-rose-400',
+    borderHover: 'hover:border-rose-300 dark:hover:border-rose-700',
+    cardShadow:
+      'motion-safe:hover:shadow-rose-500/10 dark:motion-safe:hover:shadow-rose-500/5',
+    badgeBg: 'bg-rose-50 dark:bg-rose-950/40',
+    badgeText: 'text-rose-700 dark:text-rose-300',
+    badgeBorder: 'border-rose-200 dark:border-rose-800',
+    accentGradient: 'from-rose-500 to-rose-400',
   },
   green: {
-    iconBg: 'bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900/50 dark:to-emerald-800/40',
-    iconText: 'text-emerald-600 dark:text-emerald-300',
-    glow: 'hover:shadow-emerald-100/80 dark:hover:shadow-emerald-900/50',
-    badgeBg: 'bg-emerald-50 dark:bg-emerald-900/40',
-    badgeText: 'text-emerald-600 dark:text-emerald-300',
-    border: 'hover:border-emerald-200 dark:hover:border-emerald-700',
-    accent: 'from-emerald-500/10',
+    iconGradient:
+      'bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:to-emerald-950/20',
+    iconText: 'text-emerald-600 dark:text-emerald-400',
+    borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-700',
+    cardShadow:
+      'motion-safe:hover:shadow-emerald-500/10 dark:motion-safe:hover:shadow-emerald-500/5',
+    badgeBg: 'bg-emerald-50 dark:bg-emerald-950/40',
+    badgeText: 'text-emerald-700 dark:text-emerald-300',
+    badgeBorder: 'border-emerald-200 dark:border-emerald-800',
+    accentGradient: 'from-emerald-500 to-emerald-400',
   },
   purple: {
-    iconBg: 'bg-gradient-to-br from-violet-100 to-violet-200 dark:from-violet-900/50 dark:to-violet-800/40',
-    iconText: 'text-violet-600 dark:text-violet-300',
-    glow: 'hover:shadow-violet-100/80 dark:hover:shadow-violet-900/50',
-    badgeBg: 'bg-violet-50 dark:bg-violet-900/40',
-    badgeText: 'text-violet-600 dark:text-violet-300',
-    border: 'hover:border-violet-200 dark:hover:border-violet-700',
-    accent: 'from-violet-500/10',
+    iconGradient:
+      'bg-gradient-to-br from-violet-100 to-violet-50 dark:from-violet-900/40 dark:to-violet-950/20',
+    iconText: 'text-violet-600 dark:text-violet-400',
+    borderHover: 'hover:border-violet-300 dark:hover:border-violet-700',
+    cardShadow:
+      'motion-safe:hover:shadow-violet-500/10 dark:motion-safe:hover:shadow-violet-500/5',
+    badgeBg: 'bg-violet-50 dark:bg-violet-950/40',
+    badgeText: 'text-violet-700 dark:text-violet-300',
+    badgeBorder: 'border-violet-200 dark:border-violet-800',
+    accentGradient: 'from-violet-500 to-violet-400',
   },
   teal: {
-    iconBg: 'bg-gradient-to-br from-teal-100 to-teal-200 dark:from-teal-900/50 dark:to-teal-800/40',
-    iconText: 'text-teal-600 dark:text-teal-300',
-    glow: 'hover:shadow-teal-100/80 dark:hover:shadow-teal-900/50',
-    badgeBg: 'bg-teal-50 dark:bg-teal-900/40',
-    badgeText: 'text-teal-600 dark:text-teal-300',
-    border: 'hover:border-teal-200 dark:hover:border-teal-700',
-    accent: 'from-teal-500/10',
+    iconGradient:
+      'bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/40 dark:to-teal-950/20',
+    iconText: 'text-teal-600 dark:text-teal-400',
+    borderHover: 'hover:border-teal-300 dark:hover:border-teal-700',
+    cardShadow:
+      'motion-safe:hover:shadow-teal-500/10 dark:motion-safe:hover:shadow-teal-500/5',
+    badgeBg: 'bg-teal-50 dark:bg-teal-950/40',
+    badgeText: 'text-teal-700 dark:text-teal-300',
+    badgeBorder: 'border-teal-200 dark:border-teal-800',
+    accentGradient: 'from-teal-500 to-teal-400',
   },
   cyan: {
-    iconBg: 'bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/50 dark:to-cyan-800/40',
-    iconText: 'text-cyan-600 dark:text-cyan-300',
-    glow: 'hover:shadow-cyan-100/80 dark:hover:shadow-cyan-900/50',
-    badgeBg: 'bg-cyan-50 dark:bg-cyan-900/40',
-    badgeText: 'text-cyan-600 dark:text-cyan-300',
-    border: 'hover:border-cyan-200 dark:hover:border-cyan-700',
-    accent: 'from-cyan-500/10',
+    iconGradient:
+      'bg-gradient-to-br from-cyan-100 to-cyan-50 dark:from-cyan-900/40 dark:to-cyan-950/20',
+    iconText: 'text-cyan-600 dark:text-cyan-400',
+    borderHover: 'hover:border-cyan-300 dark:hover:border-cyan-700',
+    cardShadow:
+      'motion-safe:hover:shadow-cyan-500/10 dark:motion-safe:hover:shadow-cyan-500/5',
+    badgeBg: 'bg-cyan-50 dark:bg-cyan-950/40',
+    badgeText: 'text-cyan-700 dark:text-cyan-300',
+    badgeBorder: 'border-cyan-200 dark:border-cyan-800',
+    accentGradient: 'from-cyan-500 to-cyan-400',
   },
-} satisfies Record<string, Record<string, string>>;
+};
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
+/**
+ * QuickAccessCard
+ *
+ * An enhanced navigation card for the MedRef homepage. Features:
+ *  - Gradient icon container with per-color theming
+ *  - Top-edge accent stripe on hover
+ *  - Hover lift + colored shadow (respects prefers-reduced-motion)
+ *  - Animated ChevronRight slides right on group-hover
+ *  - Prominent count badge with pop animation
+ *  - Full dark mode & WCAG focus-visible ring
+ */
 export function QuickAccessCard({
   title,
   description,
@@ -122,79 +164,112 @@ export function QuickAccessCard({
   return (
     <Link
       href={href}
+      // `group` enables child group-hover utilities
       className={cn(
-        'group relative flex flex-col rounded-xl border bg-card overflow-hidden',
-        'transition-all duration-200',
-        'hover:-translate-y-0.5 hover:shadow-lg',
-        'active:scale-[0.97] active:shadow-sm',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        c.glow,
-        c.border,
+        'group block rounded-xl',
+        // Focus-visible ring for keyboard navigation
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       )}
     >
-      {/* Subtle gradient accent top-right corner */}
       <div
         className={cn(
-          'pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full opacity-0',
-          'bg-gradient-to-br',
-          c.accent,
-          'to-transparent blur-xl',
-          'group-hover:opacity-100 transition-opacity duration-300',
+          // Base layout & cursor
+          'relative h-full cursor-pointer overflow-hidden',
+          'rounded-xl border bg-card',
+          // Smooth transitions (lift + shadow + border)
+          'transition-all duration-200 ease-out',
+          // Lift on hover — gated by motion-safe
+          'motion-safe:hover:-translate-y-1',
+          // Colored shadow on hover
+          'hover:shadow-lg',
+          c.cardShadow,
+          // Border accent on hover
+          c.borderHover,
+          // Tap feedback on mobile
+          'active:scale-[0.98] active:translate-y-0'
         )}
-        aria-hidden
-      />
+      >
+        {/* Subtle top-edge accent line — adds a "brand stripe" feel */}
+        <span
+          aria-hidden="true"
+          className={cn(
+            'absolute inset-x-0 top-0 h-[2px] rounded-t-xl',
+            'bg-gradient-to-r opacity-0 transition-opacity duration-200',
+            'group-hover:opacity-100',
+            c.accentGradient
+          )}
+        />
 
-      <div className="relative p-4 sm:p-5 flex flex-col h-full">
-        {/* Top row: icon + arrow */}
-        <div className="flex items-start justify-between">
-          <div
-            className={cn(
-              'flex items-center justify-center rounded-xl p-2.5 sm:p-3',
-              'transition-transform duration-200 group-hover:scale-105',
-              c.iconBg,
-            )}
-          >
-            <Icon className={cn('h-5 w-5 sm:h-6 sm:w-6', c.iconText)} />
+        <div className="p-4 sm:p-5">
+          {/* ── Top row: icon + chevron ─────────────────────────────── */}
+          <div className="flex items-start justify-between">
+            {/* Gradient icon container */}
+            <div
+              className={cn(
+                'flex items-center justify-center',
+                'h-10 w-10 sm:h-11 sm:w-11 rounded-xl',
+                'transition-transform duration-200',
+                'motion-safe:group-hover:scale-110',
+                c.iconGradient,
+                // Subtle inner shadow for depth
+                'shadow-sm'
+              )}
+            >
+              <Icon
+                className={cn('h-5 w-5 sm:h-6 sm:w-6', c.iconText)}
+                aria-hidden="true"
+              />
+            </div>
+
+            {/* Animated chevron */}
+            <ChevronRight
+              className={cn(
+                'h-4 w-4 text-muted-foreground/40',
+                'transition-all duration-200',
+                // Slide right + become more visible on group hover
+                'motion-safe:group-hover:translate-x-0.5 group-hover:text-muted-foreground/70'
+              )}
+              aria-hidden="true"
+            />
           </div>
 
-          <ChevronRight
-            className={cn(
-              'h-4 w-4 mt-0.5 text-muted-foreground/30',
-              'transition-all duration-200',
-              'group-hover:text-muted-foreground/60 group-hover:translate-x-0.5',
-            )}
-          />
-        </div>
-
-        {/* Text */}
-        <div className="mt-3 flex-1">
-          <h3 className="font-semibold text-sm sm:text-base leading-tight">
+          {/* ── Title ────────────────────────────────────────────────── */}
+          <h3 className="mt-3 font-semibold text-sm sm:text-base leading-snug">
             {title}
           </h3>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+
+          {/* ── Description ──────────────────────────────────────────── */}
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
             {description}
           </p>
-        </div>
 
-        {/* Count badge */}
-        {count !== undefined && (
-          <div
-            className={cn(
-              'mt-3 self-start inline-flex items-center gap-1',
-              'px-2 py-0.5 rounded-full text-xs font-medium',
-              'ring-1 ring-inset',
-              c.badgeBg,
-              c.badgeText,
-              // ring uses the same color as text with low opacity
-              'ring-current/20',
-            )}
-          >
-            <span className="font-numeric tabular-nums">
-              {count.toLocaleString('id-ID')}
-            </span>
-            <span className="opacity-70">item</span>
-          </div>
-        )}
+          {/* ── Count badge ──────────────────────────────────────────── */}
+          {count !== undefined && (
+            <div
+              className={cn(
+                'mt-3 inline-flex items-center gap-1.5',
+                'px-2.5 py-0.5 rounded-full',
+                'text-xs font-semibold tracking-wide',
+                'border',
+                // Slight scale-in on mount; use motion-safe so it degrades gracefully
+                'motion-safe:animate-[badgePop_0.3s_ease-out_both]',
+                c.badgeBg,
+                c.badgeText,
+                c.badgeBorder
+              )}
+            >
+              {/* Mini dot for visual weight */}
+              <span
+                aria-hidden="true"
+                className={cn('h-1.5 w-1.5 rounded-full opacity-70', c.iconText)}
+              />
+              <span className="font-numeric tabular-nums">
+                {count.toLocaleString('id-ID')}
+              </span>
+              <span className="opacity-70 font-normal">item</span>
+            </div>
+          )}
+        </div>
       </div>
     </Link>
   );
