@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   ShieldX,
   Share2,
+  Pill,
+  AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Drug } from '@prisma/client';
@@ -158,29 +160,28 @@ function SafetyBadge({
   if (count === 0) return null;
 
   const isInteraction = variant === 'interaction';
+  const label = isInteraction ? 'interaksi' : 'kontraindikasi';
 
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5',
-        'text-[10px] font-semibold leading-none ring-1 ring-inset',
+        'text-[11px] font-semibold leading-tight',
+        'ring-1 ring-inset',
         isInteraction
           ? 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-700/50'
           : 'bg-rose-50 text-rose-700 ring-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:ring-rose-700/50'
       )}
       role="status"
-      aria-label={
-        isInteraction
-          ? `${count} interaksi obat`
-          : `${count} kontraindikasi`
-      }
+      aria-label={`${count} ${label}`}
     >
       {isInteraction ? (
-        <AlertTriangle className="h-2.5 w-2.5" aria-hidden />
+        <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden />
       ) : (
-        <ShieldX className="h-2.5 w-2.5" aria-hidden />
+        <ShieldX className="h-3 w-3 shrink-0" aria-hidden />
       )}
       <span className="font-numeric tabular-nums">{count}</span>
+      <span className="text-[10px] font-medium opacity-80">{label}</span>
     </span>
   );
 }
@@ -344,21 +345,24 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
 
         <div className="flex flex-col h-full p-4">
           {/* ═══════════════════════════════════════════════════
-              HEADER: Name + Generic + Category
-              Drug name is visually dominant.
+              HEADER: Icon + Name + Generic + Actions
+              Drug name is visually dominant with pill icon.
               Generic name is secondary but always visible.
-              Category is a subtle pill badge.
+              Actions on the right side.
           ═══════════════════════════════════════════════════ */}
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              {/* Drug name — dominant */}
-              <h3 className="font-bold text-base sm:text-lg leading-tight text-foreground truncate">
-                {drug.name}
-              </h3>
+              {/* Drug name with icon — dominant */}
+              <div className="flex items-center gap-2">
+                <Pill className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                <h3 className="font-bold text-base sm:text-lg leading-tight text-foreground truncate">
+                  {drug.name}
+                </h3>
+              </div>
 
               {/* Generic name — secondary */}
               {drug.genericName && (
-                <p className="text-sm text-muted-foreground italic truncate mt-0.5">
+                <p className="text-sm text-muted-foreground italic truncate mt-0.5 pl-6">
                   {drug.genericName}
                 </p>
               )}
@@ -367,7 +371,7 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
               {categoryLabel && (
                 <span
                   className={cn(
-                    'inline-flex items-center mt-1.5 px-2 py-0.5 rounded-full',
+                    'inline-flex items-center mt-1.5 ml-6 px-2 py-0.5 rounded-full',
                     'text-[11px] font-medium capitalize',
                     style.badge
                   )}
@@ -377,49 +381,10 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
               )}
             </div>
 
-            {/* Chevron — navigation affordance */}
-            <ChevronRight
-              className={cn(
-                'h-5 w-5 mt-1 shrink-0',
-                'text-muted-foreground/25',
-                'transition-colors duration-200',
-                'group-hover:text-muted-foreground/50'
-              )}
-              aria-hidden
-            />
-          </div>
-
-          {/* ═══════════════════════════════════════════════════
-              BODY: Indication preview
-              Single line for quick scanning.
-          ═══════════════════════════════════════════════════ */}
-          {primaryIndication && (
-            <p className="mt-2 text-xs text-muted-foreground line-clamp-1">
-              {primaryIndication}
-            </p>
-          )}
-
-          {/* ═══════════════════════════════════════════════════
-              FOOTER: Warnings + Actions
-              Safety badges for interactions/contraindications.
-          ═══════════════════════════════════════════════════ */}
-          <div className="mt-auto pt-3 flex items-center justify-between">
-            {/* Safety warnings as badges */}
-            {hasWarnings ? (
-              <div className="flex items-center gap-1.5">
-                <SafetyBadge count={interactionsCount} variant="interaction" />
-                <SafetyBadge count={contraindicationsCount} variant="contraindication" />
-              </div>
-            ) : (
-              <span className="text-[11px] text-muted-foreground/50">
-                Lihat detail →
-              </span>
-            )}
-
-            {/* Actions — appear on hover for cleaner default state */}
+            {/* Actions — visible on hover */}
             <div
               className={cn(
-                'flex items-center gap-0.5',
+                'flex items-center gap-0.5 shrink-0',
                 'opacity-0 group-hover:opacity-100',
                 'transition-opacity duration-200'
               )}
@@ -440,6 +405,54 @@ export function DrugCard({ drug, showInteractions = true }: DrugCardProps) {
                 />
               </ActionButton>
             </div>
+          </div>
+
+          {/* ═══════════════════════════════════════════════════
+              BODY: Description / Indication preview
+              More prominent description area.
+          ═══════════════════════════════════════════════════ */}
+          {(drug.description || primaryIndication) && (
+            <p className="mt-3 text-sm text-muted-foreground line-clamp-2 pl-6">
+              {drug.description || primaryIndication}
+            </p>
+          )}
+
+          {/* ═══════════════════════════════════════════════════
+              FOOTER: Warnings section
+              Shows "Peringatan:" label with safety badges.
+          ═══════════════════════════════════════════════════ */}
+          <div className="mt-auto pt-3">
+            {hasWarnings ? (
+              <div className="flex flex-wrap items-center gap-1.5 pl-6">
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                  <AlertCircle className="h-3 w-3" />
+                  Peringatan:
+                </span>
+                <SafetyBadge
+                  count={interactionsCount}
+                  variant="interaction"
+                />
+                <SafetyBadge
+                  count={contraindicationsCount}
+                  variant="contraindication"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-between pl-6">
+                <span className="text-[11px] text-muted-foreground/50">
+                  Lihat detail →
+                </span>
+                <ChevronRight
+                  className={cn(
+                    'h-4 w-4 shrink-0',
+                    'text-muted-foreground/25',
+                    'transition-colors duration-200',
+                    'group-hover:text-muted-foreground/50'
+                  )}
+                  aria-hidden
+                />
+              </div>
+            )}
           </div>
         </div>
       </article>
