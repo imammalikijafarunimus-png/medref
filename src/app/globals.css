@@ -929,36 +929,37 @@
   .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(90px);
+    filter: blur(120px);
     animation: orbDrift 18s ease-in-out infinite;
+    pointer-events: none;
   }
 
   .orb-1 {
-    width: 600px;
-    height: 600px;
+    width: 500px;
+    height: 500px;
     background: radial-gradient(circle, oklch(65% 0.18 200) 0%, transparent 70%);
-    top: -200px;
-    left: -150px;
-    opacity: 0.15;
+    top: -250px;
+    left: -200px;
+    opacity: 0.08;
   }
 
   .orb-2 {
-    width: 500px;
-    height: 500px;
+    width: 400px;
+    height: 400px;
     background: radial-gradient(circle, oklch(55% 0.18 250) 0%, transparent 70%);
-    top: 30%;
-    right: -100px;
-    opacity: 0.1;
+    top: 20%;
+    right: -150px;
+    opacity: 0.06;
     animation-delay: -6s;
   }
 
   .orb-3 {
-    width: 400px;
-    height: 400px;
+    width: 350px;
+    height: 350px;
     background: radial-gradient(circle, oklch(60% 0.15 280) 0%, transparent 70%);
-    bottom: -100px;
-    left: 30%;
-    opacity: 0.08;
+    bottom: -150px;
+    left: 25%;
+    opacity: 0.05;
     animation-delay: -12s;
   }
 

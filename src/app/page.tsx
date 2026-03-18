@@ -46,7 +46,7 @@ function BagianHero() {
         className="hero-heading mt-6 max-w-2xl fade-up"
         style={{ animationDelay: '100ms' }}
       >
-        Informasi klinis<br /><em>tepat dan cepat</em>
+        <em>MedRef</em>
       </h1>
 
       {/* Subtitle */}
@@ -54,7 +54,7 @@ function BagianHero() {
         className="mt-4 text-base sm:text-lg text-muted-foreground max-w-md leading-relaxed fade-up"
         style={{ animationDelay: '200ms' }}
       >
-        Database obat, herbal, laboratorium, dan panduan klinis yang selalu siap di ujung jari.
+        Medical Reference — Database obat, herbal, laboratorium, dan panduan klinis yang selalu siap di ujung jari.
       </p>
 
       {/* Greeting */}
