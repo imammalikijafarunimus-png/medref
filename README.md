@@ -17,8 +17,12 @@ Aplikasi web referensi klinis untuk tenaga medis Indonesia. MedRef menyediakan d
 - **Catatan Klinis** - Panduan referensi cepat untuk praktik klinik
 
 ### 🔍 Pencarian Cerdas
-- Pencarian real-time dengan debounce
-- Filter berdasarkan kategori
+- Pencarian real-time dengan debounce (300ms)
+- Dropdown hasil pencarian yang responsif
+- Filter berdasarkan kategori (Obat, Herbal, Gejala, Catatan)
+- Tag pencarian populer untuk akses cepat
+- Tracking pencarian untuk analisis penggunaan
+- Empty state yang informatif
 - Pagination untuk navigasi data yang efisien
 
 ### 💊 Cek Interaksi Obat
@@ -27,21 +31,26 @@ Aplikasi web referensi klinis untuk tenaga medis Indonesia. MedRef menyediakan d
 - Rekomendasi penanganan
 
 ### 🧮 Kalkulator Medis
-Lengkap dengan 11+ kalkulator medis:
+Kalkulator medis dengan UI premium dan arsitektur modular. Fitur:
+- Auto-calculate (kalkulasi otomatis saat input berubah)
+- Label unit yang jelas dan eksplisit
+- Hasil yang menonjol dengan fungsi copy
+- Tombol reset untuk mengosongkan input
+- Tampilan responsif untuk mobile
 
 | Kalkulator | Fungsi |
 |------------|--------|
-| Dosis Pediatrik | Hitung dosis berdasarkan berat badan |
-| BMI | Indeks Massa Tubuh |
-| GFR (Cockcroft-Gault) | Laju Filtrasi Glomerulus |
-| Kalori (BMR/TDEE) | Kebutuhan kalori harian |
-| Berat Badan Ideal | Perhitungan IBW dan BB Ideal |
-| BSA (Du Bois) | Body Surface Area |
+| Dosis Pediatrik | Hitung dosis berdasarkan berat badan dengan warning |
+| BMI | Indeks Massa Tubuh dengan kategori |
+| GFR (Cockcroft-Gault) | Laju Filtrasi Glomerulus dan staging CKD |
+| Kalori (BMR/TDEE) | Kebutuhan kalori harian (Mifflin-St Jeor) |
+| Berat Badan Ideal | Perhitungan IBW (Devine, Robinson, Miller) |
+| BSA | Body Surface Area (Mosteller, Du Bois, Haycock) |
 | Infus | Flow rate dan drip rate |
-| MAC Anestesi | Minimum Alveolar Concentration |
-| Konversi Steroid | Ekuivalensi dosis steroid |
-| Dosis Warfarin | Panduan dosing antikoagulan |
-| Elektrolit | Corrected sodium, anion gap |
+| MAC Anestesi | Minimum Alveolar Concentration dengan penyesuaian usia/suhu |
+| Konversi Steroid | Ekuivalensi dosis steroid antar jenis |
+| Dosis Warfarin | Panduan penyesuaian dosis berdasarkan INR |
+| Elektrolit | Corrected sodium (glukosa/lipid/protein) dan Anion Gap |
 
 ### 🧪 Nilai Normal Laboratorium
 - Darah lengkap (CBC)
@@ -53,7 +62,7 @@ Lengkap dengan 11+ kalkulator medis:
 - Dan masih banyak lagi
 
 ### ⭐ Fitur Tambahan
-- **Favorit** - Simpan item untuk akses cepat
+- **Favorit** - Simpan item untuk akses cepat (obat dan herbal)
 - **Share** - Bagikan informasi via Web Share API atau clipboard
 - **Toast Notifications** - Notifikasi feedback untuk setiap aksi
 - **Dark Mode** - Dukungan tema gelap/terang
@@ -78,31 +87,77 @@ Lengkap dengan 11+ kalkulator medis:
 ```
 medref/
 ├── prisma/
-│   └── schema.prisma        # Schema database
+│   ├── schema.prisma           # Schema database
+│   └── migrations/             # Database migrations
 ├── public/
-│   └── icons/               # PWA icons
+│   └── icons/                  # PWA icons
 ├── src/
 │   ├── app/
-│   │   ├── api/             # API routes
-│   │   ├── drugs/           # Halaman obat
-│   │   ├── herbals/         # Halaman herbal
-│   │   ├── symptoms/        # Halaman gejala
-│   │   ├── notes/           # Halaman catatan
-│   │   ├── favorites/       # Halaman favorit
-│   │   ├── interaksi/       # Cek interaksi obat
-│   │   ├── kalkulator/      # Kalkulator medis
-│   │   ├── lab-values/      # Nilai normal lab
-│   │   └── search/          # Halaman pencarian
+│   │   ├── api/                # API routes
+│   │   │   ├── drugs/          # Drug API endpoints
+│   │   │   ├── herbals/        # Herbal API endpoints
+│   │   │   ├── symptoms/       # Symptom API endpoints
+│   │   │   ├── notes/          # Notes API endpoints
+│   │   │   ├── search/         # Search API endpoint
+│   │   │   └── interaksi/      # Drug interaction API
+│   │   ├── drugs/              # Halaman obat
+│   │   ├── herbals/            # Halaman herbal
+│   │   ├── symptoms/           # Halaman gejala
+│   │   ├── notes/              # Halaman catatan
+│   │   ├── favorites/          # Halaman favorit
+│   │   ├── interaksi/          # Cek interaksi obat
+│   │   ├── kalkulator/         # Kalkulator medis
+│   │   ├── lab-values/         # Nilai normal lab
+│   │   └── search/             # Halaman pencarian
 │   ├── components/
-│   │   ├── medical/         # Komponen medis
-│   │   └── ui/              # Komponen UI (shadcn)
-│   └── lib/
-│       ├── data.ts          # Data fetching functions
-│       └── utils.ts         # Utility functions
-├── .env                     # Environment variables
-├── manifest.json            # PWA manifest
-└── sw.js                    # Service Worker
+│   │   ├── medical/            # Komponen medis
+│   │   │   ├── calculators/    # Modul kalkulator medis
+│   │   │   │   ├── calculator-page.tsx    # Halaman utama
+│   │   │   │   ├── calculator-ui.tsx      # Komponen UI reusable
+│   │   │   │   ├── calculations.ts        # Fungsi kalkulasi murni
+│   │   │   │   ├── types.ts               # Type definitions
+│   │   │   │   └── *-calculator.tsx       # Komponen kalkulator individual
+│   │   │   ├── search-bar.tsx             # Komponen pencarian
+│   │   │   ├── search-provider.tsx        # Context untuk pencarian
+│   │   │   ├── search-results-dropdown.tsx # Dropdown hasil
+│   │   │   ├── search-result-item.tsx     # Item hasil pencarian
+│   │   │   ├── search-empty-state.tsx     # Empty state pencarian
+│   │   │   └── popular-search-tags.tsx    # Tag populer
+│   │   └── ui/                 # Komponen UI (shadcn)
+│   ├── lib/
+│   │   ├── data.ts             # Data fetching functions
+│   │   ├── utils.ts            # Utility functions
+│   │   ├── fuzzy-search.ts     # Fuzzy search implementation
+│   │   └── actions/            # Server actions
+│   └── services/               # Service layer
+│       ├── drug-service.ts
+│       ├── herbal-service.ts
+│       ├── symptom-service.ts
+│       └── search-service.ts
+├── .env                        # Environment variables
+├── manifest.json               # PWA manifest
+└── sw.js                       # Service Worker
 ```
+
+## 🧮 Arsitektur Kalkulator Medis
+
+Modul kalkulator menggunakan arsitektur modular yang bersih:
+
+```
+calculators/
+├── types.ts              # Type definitions (Gender, ActivityLevel, dll)
+├── calculations.ts       # Pure calculation functions (no UI)
+├── calculator-ui.tsx     # Reusable UI components
+├── calculator-page.tsx   # Main page with navigation
+└── *-calculator.tsx      # Individual calculator components
+```
+
+**Keuntungan Arsitektur Modular:**
+- **Separation of Concerns** - Logika kalkulasi terpisah dari UI
+- **Testability** - Fungsi kalkulasi murni mudah diuji
+- **Reusability** - Komponen UI dapat digunakan ulang
+- **Maintainability** - Mudah menambah kalkulator baru
+- **Type Safety** - TypeScript untuk semua komponen
 
 ## 🚀 Instalasi
 
@@ -164,6 +219,7 @@ MedRef adalah Progressive Web App yang dapat diinstal di perangkat:
 | `npm run start` | Jalankan production server |
 | `npm run lint` | Jalankan ESLint |
 | `npx prisma studio` | Buka Prisma Studio GUI |
+| `npx prisma generate` | Generate Prisma Client |
 
 ## 🤝 Contributing
 
@@ -174,6 +230,23 @@ Kontribusi sangat diterima! Silakan buat issue atau pull request.
 3. Commit perubahan (`git commit -m 'Tambah fitur baru'`)
 4. Push ke branch (`git push origin feature/fitur-baru`)
 5. Buat Pull Request
+
+## 📝 Changelog
+
+### Version 1.1.0 (Current)
+- ✨ Refactor kalkulator medis dengan UI premium
+- ✨ Tambah pencarian dropdown real-time
+- ✨ Tambah tag pencarian populer
+- ✨ Tambah search tracking untuk analisis
+- 🎨 Perbaikan UI/UX halaman utama
+- 🐛 Perbaikan berbagai bug minor
+
+### Version 1.0.0
+- 🎉 Rilis awal
+- 📚 Database obat, herbal, gejala, catatan
+- 🧮 Kalkulator medis dasar
+- 💊 Cek interaksi obat
+- ⭐ Fitur favorit
 
 ## 📄 License
 
