@@ -31,6 +31,7 @@ model Drug {
   counselingPoints    String?                // Edukasi pasien
   storage             String?
   notes               String?
+  viewCount           Int                    @default(0)
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
 
@@ -130,6 +131,7 @@ model Herbal {
   regulatoryStatus String?
   references       String?
   notes            String?
+  viewCount        Int                 @default(0)
   createdAt        DateTime            @default(now())
   updatedAt        DateTime            @updatedAt
   favorites        Favorite[]          @relation("HerbalFavorites")
@@ -250,4 +252,18 @@ model Favorite {
   note      ClinicalNote? @relation("NoteFavorites", fields: [noteId], references: [id], onDelete: Cascade)
 
   @@unique([userId, itemType, drugId, herbalId, noteId])
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Search & View Tracking
+// ─────────────────────────────────────────────────────────────────
+
+/// Log setiap query yang diketik user di search bar
+model SearchLog {
+  id        String   @id @default(cuid())
+  query     String   // query sudah di-trim dan lowercase
+  createdAt DateTime @default(now())
+
+  @@index([query])
+  @@index([createdAt])
 }

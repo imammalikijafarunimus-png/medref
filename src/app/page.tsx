@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { ambilJumlahData } from '@/lib/data';
+import { ambilJumlahData, ambilPopularTags } from '@/lib/data';
 import { SearchBar } from '@/components/medical/search-bar';
 import { QuickAccessCard } from '@/components/medical/quick-access-card';
 import { TimeGreeting } from '@/components/medical/greeting';
@@ -32,7 +32,8 @@ function BackgroundCanvas() {
 // Hero Section
 // ─────────────────────────────────────────────────────────────────
 
-function BagianHero() {
+async function BagianHero() {
+  const popularTags = await ambilPopularTags();
   return (
     <section className="flex flex-col items-center text-center pt-10 sm:pt-14 pb-8 sm:pb-10">
       {/* Badge */}
@@ -54,7 +55,7 @@ function BagianHero() {
         className="mt-4 text-base sm:text-lg text-muted-foreground max-w-md leading-relaxed fade-up"
         style={{ animationDelay: '200ms' }}
       >
-        Medical Reference — Referensi klinis yang tumbuh bersama praktikmu.
+        Referensi klinis yang tumbuh bersama praktikmu.
       </p>
 
       {/* Greeting */}
@@ -74,7 +75,7 @@ function BagianHero() {
         />
 
         {/* Popular tags */}
-        <PopularSearchTags className="mt-3" />
+        <PopularSearchTags tags={popularTags} className="mt-3" />
       </div>
     </section>
   );

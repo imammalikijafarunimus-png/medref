@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Loader2, Command } from 'lucide-react';
+import { trackSearch } from '@/lib/actions/track';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -168,6 +169,9 @@ export function SearchBar({
       if (query.trim()) {
         setIsOpen(false);
         addRecentSearch(query.trim());
+
+        // Track search query (fire-and-forget)
+        trackSearch(query.trim()).catch(() => {});
 
         if (onSearch) {
           onSearch(query.trim());
@@ -338,6 +342,8 @@ export function SearchBar({
                 if (query.trim()) {
                   setIsOpen(false);
                   addRecentSearch(query.trim());
+                  // Track search query (fire-and-forget)
+                  trackSearch(query.trim()).catch(() => {});
                   if (onSearch) {
                     onSearch(query.trim());
                   } else {

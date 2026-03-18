@@ -998,12 +998,13 @@
 
   .hero-heading em {
     font-style: normal;
+    /* Light mode: teal gelap → indigo — hue beda jauh, semua kontras di bg terang */
     background: linear-gradient(
       90deg,
-      oklch(42% 0.22 200) 0%,
-      oklch(55% 0.20 250) 40%,
-      oklch(45% 0.24 180) 60%,
-      oklch(42% 0.22 200) 100%
+      oklch(40% 0.20 200) 0%,
+      oklch(45% 0.22 270) 40%,
+      oklch(42% 0.18 220) 65%,
+      oklch(40% 0.20 200) 100%
     );
     background-size: 250% auto;
     -webkit-background-clip: text;
@@ -1012,21 +1013,24 @@
     animation: shimmer 5s linear infinite;
   }
 
-  .dark .hero-heading em {
+  /* Dark mode: warna lebih terang, teal cerah → biru-ungu cerah */
+  :is(.dark) .hero-heading em {
     background: linear-gradient(
       90deg,
-      oklch(72% 0.20 200) 0%,
-      oklch(84% 0.16 250) 40%,
-      oklch(76% 0.22 180) 60%,
-      oklch(72% 0.20 200) 100%
+      oklch(75% 0.18 195) 0%,
+      oklch(72% 0.22 275) 40%,
+      oklch(78% 0.16 215) 65%,
+      oklch(75% 0.18 195) 100%
     );
     background-size: 250% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    animation: shimmer 5s linear infinite;
   }
 
   @keyframes shimmer {
+    from { background-position: 0% center; }
     to { background-position: 250% center; }
   }
 

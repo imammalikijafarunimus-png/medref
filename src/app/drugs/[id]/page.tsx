@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { db } from '@/lib/db';
+import { trackView } from '@/lib/actions/track';
 
 // Force dynamic rendering to prevent build-time database access
 export const dynamic = 'force-dynamic';
@@ -153,6 +154,9 @@ export default async function DrugDetailPage({
   if (!drug) {
     notFound();
   }
+
+  // Track view (fire-and-forget)
+  trackView('drug', id).catch(() => {});
 
   const pregnancyInfo = drug.pregnancyCat 
     ? warnaKehamilan[drug.pregnancyCat.toLowerCase()] 
