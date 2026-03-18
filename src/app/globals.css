@@ -998,16 +998,36 @@
 
   .hero-heading em {
     font-style: normal;
-    background: linear-gradient(90deg, var(--primary), oklch(70% 0.15 195), var(--primary));
-    background-size: 200% auto;
+    background: linear-gradient(
+      90deg,
+      oklch(42% 0.22 200) 0%,
+      oklch(55% 0.20 250) 40%,
+      oklch(45% 0.24 180) 60%,
+      oklch(42% 0.22 200) 100%
+    );
+    background-size: 250% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: shimmer 4s linear infinite;
+    animation: shimmer 5s linear infinite;
+  }
+
+  .dark .hero-heading em {
+    background: linear-gradient(
+      90deg,
+      oklch(72% 0.20 200) 0%,
+      oklch(84% 0.16 250) 40%,
+      oklch(76% 0.22 180) 60%,
+      oklch(72% 0.20 200) 100%
+    );
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   @keyframes shimmer {
-    to { background-position: 200% center; }
+    to { background-position: 250% center; }
   }
 
   /* Hero badge with pulse */
