@@ -54,7 +54,7 @@ function BagianHero() {
         className="mt-4 text-base sm:text-lg text-muted-foreground max-w-md leading-relaxed fade-up"
         style={{ animationDelay: '200ms' }}
       >
-        Medical Reference — Referensi klinis yang tumbuh bersama praktikmu.
+        Referensi klinis yang tumbuh bersama praktikmu.
       </p>
 
       {/* Greeting */}
