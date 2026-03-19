@@ -2,83 +2,10 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart } from 'lucide-react';
+import { Heart, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { FavoritesTabs } from '@/components/favorites/favorites-tabs';
 import type { FavoriteDrug, FavoriteHerbal, FavoriteNote } from '@/components/favorites/types';
-
-// Mock data for demonstration - in production, fetch from API
-const mockDrugs: FavoriteDrug[] = [
-  {
-    id: '1',
-    name: 'Amoxicillin',
-    genericName: 'Amoxicillin Trihydrate',
-    category: 'Antibiotik',
-    drugClass: 'Penicillin',
-    favoriteId: 'fav1',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Paracetamol',
-    genericName: 'Acetaminophen',
-    category: 'Analgesik',
-    drugClass: 'Non-opioid',
-    favoriteId: 'fav2',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Metformin',
-    genericName: 'Metformin HCl',
-    category: 'Antidiabetik',
-    drugClass: 'Biguanide',
-    favoriteId: 'fav3',
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const mockHerbals: FavoriteHerbal[] = [
-  {
-    id: '1',
-    name: 'Jahe',
-    latinName: 'Zingiber officinale',
-    category: 'Pencernaan',
-    benefit: 'Membantu meredakan mual, muntah, dan gangguan pencernaan',
-    favoriteId: 'fav4',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Kunyit',
-    latinName: 'Curcuma longa',
-    category: 'Antiinflamasi',
-    benefit: 'Memiliki efek antiinflamasi dan antioksidan',
-    favoriteId: 'fav5',
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const mockNotes: FavoriteNote[] = [
-  {
-    id: '1',
-    title: 'Panduan Dosis Antibiotik',
-    category: 'Farmakologi',
-    specialty: 'Internal',
-    content: 'Panduan lengkap tentang dosis antibiotik untuk berbagai kondisi infeksi...',
-    favoriteId: 'fav6',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    title: 'Algoritma Hipertensi',
-    category: 'Kardiologi',
-    specialty: 'Internal',
-    content: 'Langkah diagnosis dan tatalaksana hipertensi berdasarkan panduan terbaru...',
-    favoriteId: 'fav7',
-    createdAt: new Date().toISOString(),
-  },
-];
 
 export default function FavoritesPage() {
   const router = useRouter();
@@ -88,22 +15,22 @@ export default function FavoritesPage() {
   const [removingIds, setRemovingIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch favorites on mount
+  // ✅ FIX: Fetch real favorites from API — no more mock data
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        // In production, replace with actual API call:
-        // const response = await fetch('/api/favorites');
-        // const data = await response.json();
-        // setDrugs(data.drugs);
-        // setHerbals(data.herbals);
-        // setNotes(data.notes);
+        const response = await fetch('/api/favorites');
+        if (!response.ok) throw new Error('Failed to fetch');
+        const data: Array<
+          | (FavoriteDrug & { type: 'drug' })
+          | (FavoriteHerbal & { type: 'herbal' })
+          | (FavoriteNote & { type: 'note' })
+        > = await response.json();
 
-        // Using mock data for demonstration
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setDrugs(mockDrugs);
-        setHerbals(mockHerbals);
-        setNotes(mockNotes);
+        // ✅ FIX: Split flat array by type into typed state
+        setDrugs(data.filter((item): item is FavoriteDrug & { type: 'drug' } => item.type === 'drug'));
+        setHerbals(data.filter((item): item is FavoriteHerbal & { type: 'herbal' } => item.type === 'herbal'));
+        setNotes(data.filter((item): item is FavoriteNote & { type: 'note' } => item.type === 'note'));
       } catch (error) {
         console.error('Failed to fetch favorites:', error);
         toast.error('Gagal memuat favorit');
@@ -115,33 +42,32 @@ export default function FavoritesPage() {
     fetchFavorites();
   }, []);
 
-  // Remove drug from favorites
   const handleRemoveDrug = useCallback(async (drugId: string) => {
     const drug = drugs.find((d) => d.id === drugId);
     if (!drug) return;
 
-    // Optimistic update
     setRemovingIds((prev) => new Set(prev).add(drugId));
 
     try {
-      // In production, call API:
-      // await fetch(`/api/favorites/${drug.favoriteId}`, { method: 'DELETE' });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      const res = await fetch(`/api/favorites/${drug.favoriteId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
 
       setDrugs((prev) => prev.filter((d) => d.id !== drugId));
       toast.success(`${drug.name} dihapus dari favorit`, {
         action: {
           label: 'Undo',
-          onClick: () => {
+          onClick: async () => {
+            await fetch('/api/favorites', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ itemId: drugId, itemType: 'drug' }),
+            });
             setDrugs((prev) => [...prev, drug]);
             toast.success(`${drug.name} dikembalikan ke favorit`);
           },
         },
       });
-    } catch (error) {
-      console.error('Failed to remove favorite:', error);
+    } catch {
       toast.error('Gagal menghapus favorit');
     } finally {
       setRemovingIds((prev) => {
@@ -152,33 +78,32 @@ export default function FavoritesPage() {
     }
   }, [drugs]);
 
-  // Remove herbal from favorites
   const handleRemoveHerbal = useCallback(async (herbalId: string) => {
     const herbal = herbals.find((h) => h.id === herbalId);
     if (!herbal) return;
 
-    // Optimistic update
     setRemovingIds((prev) => new Set(prev).add(herbalId));
 
     try {
-      // In production, call API:
-      // await fetch(`/api/favorites/${herbal.favoriteId}`, { method: 'DELETE' });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      const res = await fetch(`/api/favorites/${herbal.favoriteId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
 
       setHerbals((prev) => prev.filter((h) => h.id !== herbalId));
       toast.success(`${herbal.name} dihapus dari favorit`, {
         action: {
           label: 'Undo',
-          onClick: () => {
+          onClick: async () => {
+            await fetch('/api/favorites', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ itemId: herbalId, itemType: 'herbal' }),
+            });
             setHerbals((prev) => [...prev, herbal]);
             toast.success(`${herbal.name} dikembalikan ke favorit`);
           },
         },
       });
-    } catch (error) {
-      console.error('Failed to remove favorite:', error);
+    } catch {
       toast.error('Gagal menghapus favorit');
     } finally {
       setRemovingIds((prev) => {
@@ -189,33 +114,32 @@ export default function FavoritesPage() {
     }
   }, [herbals]);
 
-  // Remove note from favorites
   const handleRemoveNote = useCallback(async (noteId: string) => {
     const note = notes.find((n) => n.id === noteId);
     if (!note) return;
 
-    // Optimistic update
     setRemovingIds((prev) => new Set(prev).add(noteId));
 
     try {
-      // In production, call API:
-      // await fetch(`/api/favorites/${note.favoriteId}`, { method: 'DELETE' });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      const res = await fetch(`/api/favorites/${note.favoriteId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
 
       setNotes((prev) => prev.filter((n) => n.id !== noteId));
       toast.success(`"${note.title}" dihapus dari favorit`, {
         action: {
           label: 'Undo',
-          onClick: () => {
+          onClick: async () => {
+            await fetch('/api/favorites', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ itemId: noteId, itemType: 'note' }),
+            });
             setNotes((prev) => [...prev, note]);
             toast.success(`"${note.title}" dikembalikan ke favorit`);
           },
         },
       });
-    } catch (error) {
-      console.error('Failed to remove favorite:', error);
+    } catch {
       toast.error('Gagal menghapus favorit');
     } finally {
       setRemovingIds((prev) => {
@@ -226,7 +150,6 @@ export default function FavoritesPage() {
     }
   }, [notes]);
 
-  // Navigate to detail pages
   const handleDrugClick = useCallback((drugId: string) => {
     router.push(`/drugs/${drugId}`);
   }, [router]);
@@ -243,48 +166,49 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b">
-        <div className="container max-w-5xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
-              <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
+      {/* ── Premium Header ── */}
+      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/75 backdrop-blur-xl backdrop-saturate-150">
+        <div className="container max-w-4xl mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              {/* Icon with animated pulse ring */}
+              <div className="relative">
+                <div className="absolute inset-0 rounded-xl bg-rose-500/20 animate-ping [animation-duration:2.5s]" />
+                <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500/15 to-rose-600/25 border border-rose-500/20 flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-rose-500 fill-rose-500/80" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-[15px] font-semibold tracking-tight text-foreground">
+                  Favorit Saya
+                </h1>
+                <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
+                  {isLoading ? 'Memuat…' : totalFavorites === 0
+                    ? 'Belum ada yang disimpan'
+                    : `${totalFavorites} item tersimpan`}
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-card-foreground">Favorit</h1>
-              <p className="text-sm text-muted-foreground">
-                {totalFavorites} item tersimpan
-              </p>
-            </div>
+
+            {/* Decorative badge */}
+            {!isLoading && totalFavorites > 0 && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/8 border border-rose-500/15">
+                <Sparkles className="w-3 h-3 text-rose-500/70" />
+                <span className="text-[11px] font-medium text-rose-600 dark:text-rose-400">
+                  Koleksi Anda
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Content */}
-      <main className="container max-w-5xl mx-auto px-4 py-6">
+      {/* ── Main Content ── */}
+      <main className="container max-w-4xl mx-auto px-4 py-6">
         {isLoading ? (
-          // Loading skeleton
-          <div className="space-y-4">
-            <div className="h-12 w-full max-w-lg bg-muted animate-pulse rounded-lg" />
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-28 bg-muted animate-pulse rounded-lg" />
-              ))}
-            </div>
-          </div>
+          <LoadingSkeleton />
         ) : totalFavorites === 0 ? (
-          // Empty state for all
-          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
-              <Heart className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold text-card-foreground mb-2">
-              Belum ada favorit
-            </h3>
-            <p className="text-muted-foreground max-w-sm mb-6">
-              Simpan obat, herbal, atau catatan favorit Anda untuk akses cepat
-            </p>
-          </div>
+          <EmptyState />
         ) : (
           <FavoritesTabs
             drugs={drugs}
@@ -300,6 +224,57 @@ export default function FavoritesPage() {
           />
         )}
       </main>
+    </div>
+  );
+}
+
+/* ── Subcomponents ── */
+
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-5 animate-in fade-in duration-300">
+      {/* Tab bar skeleton */}
+      <div className="flex gap-2">
+        {[80, 64, 72].map((w, i) => (
+          <div
+            key={i}
+            className="h-8 rounded-full bg-muted/60 animate-pulse"
+            style={{ width: `${w}px` }}
+          />
+        ))}
+      </div>
+      {/* Card skeletons */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-[100px] rounded-2xl bg-muted/40 animate-pulse"
+            style={{ animationDelay: `${i * 60}ms` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Layered icon */}
+      <div className="relative mb-6">
+        <div className="w-20 h-20 rounded-full bg-rose-500/8 border border-rose-500/15 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-rose-500/12 border border-rose-500/20 flex items-center justify-center">
+            <Heart className="w-6 h-6 text-rose-400/60" strokeWidth={1.5} />
+          </div>
+        </div>
+      </div>
+
+      <h3 className="text-base font-semibold text-foreground mb-1.5">
+        Belum ada favorit
+      </h3>
+      <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+        Ketuk ikon hati pada obat, herbal, atau catatan untuk menyimpannya di sini.
+      </p>
     </div>
   );
 }

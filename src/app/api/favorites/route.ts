@@ -13,30 +13,39 @@ export async function GET(request: NextRequest) {
         herbal: true,
         note: true,
       },
+      orderBy: { createdAt: 'desc' },
     });
 
     const formatted = favorites.map((fav) => {
+      // ✅ FIX: Return ALL fields needed by FavoriteDrug type — not just genericName/drugClass
       if (fav.itemType === 'drug' && fav.drug) {
         return {
           id: fav.drug.id,
-          name: fav.drug.genericName,
-          category: fav.drug.drugClass,
-          type: 'drug',
+          name: fav.drug.name,
+          genericName: fav.drug.genericName,
+          category: fav.drug.category,
+          drugClass: fav.drug.drugClass,
+          type: 'drug' as const,
           favoriteId: fav.id,
+          createdAt: fav.createdAt.toISOString(),
         };
       }
 
+      // ✅ FIX: Return ALL fields needed by FavoriteHerbal type
       if (fav.itemType === 'herbal' && fav.herbal) {
         return {
           id: fav.herbal.id,
-          name: fav.herbal.latinName,
+          name: fav.herbal.name,
+          latinName: fav.herbal.latinName,
           category: fav.herbal.category,
           benefit: fav.herbal.description,
-          type: 'herbal',
+          type: 'herbal' as const,
           favoriteId: fav.id,
+          createdAt: fav.createdAt.toISOString(),
         };
       }
 
+      // ✅ FIX: Return ALL fields needed by FavoriteNote type
       if (fav.itemType === 'note' && fav.note) {
         return {
           id: fav.note.id,
@@ -44,8 +53,9 @@ export async function GET(request: NextRequest) {
           category: fav.note.category,
           specialty: fav.note.specialty,
           content: fav.note.content,
-          type: 'note',
+          type: 'note' as const,
           favoriteId: fav.id,
+          createdAt: fav.createdAt.toISOString(),
         };
       }
 
@@ -67,7 +77,6 @@ export async function POST(request: NextRequest) {
   try {
     const userId = 'default-user';
     const body = await request.json();
-
     const { itemId, itemType } = body;
 
     if (!itemId || !itemType) {
@@ -84,13 +93,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check for existing favorite to avoid duplicates
     const existing = await db.favorite.findFirst({
-     where: {
-       userId,
-       itemType,
-       drugId: itemType === 'drug' ? itemId : null,
-       herbalId: itemType === 'herbal' ? itemId : null,
-       noteId: itemType === 'note' ? itemId : null,
+      where: {
+        userId,
+        itemType,
+        drugId: itemType === 'drug' ? itemId : null,
+        herbalId: itemType === 'herbal' ? itemId : null,
+        noteId: itemType === 'note' ? itemId : null,
       },
     });
 
@@ -102,12 +112,12 @@ export async function POST(request: NextRequest) {
     }
 
     const favorite = await db.favorite.create({
-     data: {
-       userId,
-       itemType,
-       drugId: itemType === 'drug' ? itemId : null,
-       herbalId: itemType === 'herbal' ? itemId : null,
-       noteId: itemType === 'note' ? itemId : null,
+      data: {
+        userId,
+        itemType,
+        drugId: itemType === 'drug' ? itemId : null,
+        herbalId: itemType === 'herbal' ? itemId : null,
+        noteId: itemType === 'note' ? itemId : null,
       },
     });
 
@@ -129,16 +139,22 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
 
     if (!id) {
+      return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 });
+    }
+
+    // ✅ Verify ownership before deleting
+    const existing = await db.favorite.findFirst({
+      where: { id, userId },
+    });
+
+    if (!existing) {
       return NextResponse.json(
-        { error: 'ID diperlukan' },
-        { status: 400 }
+        { error: 'Favorit tidak ditemukan' },
+        { status: 404 }
       );
     }
 
-    await db.favorite.delete({
-      where: { id },
-    });
-
+    await db.favorite.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
