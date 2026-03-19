@@ -172,7 +172,7 @@ model HerbalIndication {
   updatedAt     DateTime @updatedAt
   herbal        Herbal   @relation(fields: [herbalId], references: [id], onDelete: Cascade)
 
-  @@unique([herbalId, indication])  // <-- Tambahkan ini
+  @@unique([herbalId, indication])
 }
 
 model HerbalInteraction {
@@ -241,7 +241,7 @@ model SymptomDrugMapping {
 model Favorite {
   id        String        @id @default(cuid())
   userId    String
-  itemType  String
+  itemType  String        // "drug" | "herbal" | "note"
   drugId    String?
   herbalId  String?
   noteId    String?
