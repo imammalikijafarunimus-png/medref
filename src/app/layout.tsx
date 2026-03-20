@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { headers } from "next/headers"; // Tambahkan ini
 import "./globals.css";
 import { Header } from "@/components/medical/header";
 import { BottomNav } from "@/components/medical/bottom-nav";
@@ -56,11 +57,15 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Ambil nonce yang di-generate oleh middleware
+  const headerList = await headers();
+  const nonce = headerList.get("x-nonce") || "";
+
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
@@ -70,12 +75,20 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
+      {/* Penting: Gunakan nonce pada body atau script jika ada inline script manual. 
+          Next.js secara otomatis akan menyisipkan nonce ke script internalnya 
+          jika terdeteksi di headers.
+      */}
+      <body 
+        className={`${inter.variable} font-sans antialiased`} 
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          nonce={nonce} // Berikan nonce ke ThemeProvider agar inline style-nya tidak diblokir
         >
           <div className="relative min-h-screen flex flex-col">
             <Header />

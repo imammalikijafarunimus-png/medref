@@ -1,10 +1,13 @@
-// Types
+// Types (source of truth)
 export * from './types';
 
-// Calculation Functions
-export * from './calculations';
+// Functions (NO type export conflict)
+export {
+  calculateWarfarinDose,
+  // tambahin function lain
+} from './calculations';
 
-// UI Components
+// UI
 export * from './calculator-ui';
 
 // Individual Calculator Components

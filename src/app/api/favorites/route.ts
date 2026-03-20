@@ -1,10 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { Prisma } from "@prisma/client";
 
-// GET /api/favorites
+type FavoriteItem =
+  | {
+      id: string;
+      name: string;
+      genericName: string;
+      category: string;
+      drugClass: string;
+      type: "drug";
+      favoriteId: string;
+      createdAt: string;
+    }
+  | {
+      id: string;
+      name: string;
+      latinName: string;
+      category: string;
+      benefit: string;
+      type: "herbal";
+      favoriteId: string;
+      createdAt: string;
+    }
+  | {
+      id: string;
+      title: string;
+      category: string;
+      specialty: string;
+      content: string;
+      type: "note";
+      favoriteId: string;
+      createdAt: string;
+    };
+
 export async function GET(request: NextRequest) {
   try {
-    const userId = 'default-user';
+    const userId = "default-user";
 
     const favorites = await db.favorite.findMany({
       where: { userId },
@@ -13,62 +45,57 @@ export async function GET(request: NextRequest) {
         herbal: true,
         note: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
-    const formatted = favorites.map((fav) => {
-      // ✅ FIX: Return ALL fields needed by FavoriteDrug type — not just genericName/drugClass
-      if (fav.itemType === 'drug' && fav.drug) {
+    type FavoriteWithRelations = typeof favorites[number];
+
+    const formatted = favorites.map((fav: FavoriteWithRelations) => {
+      if (fav.itemType === "drug" && fav.drug) {
         return {
           id: fav.drug.id,
           name: fav.drug.name,
           genericName: fav.drug.genericName,
           category: fav.drug.category,
           drugClass: fav.drug.drugClass,
-          type: 'drug' as const,
+          type: "drug" as const,
           favoriteId: fav.id,
           createdAt: fav.createdAt.toISOString(),
         };
       }
 
-      // ✅ FIX: Return ALL fields needed by FavoriteHerbal type
-      if (fav.itemType === 'herbal' && fav.herbal) {
+      if (fav.itemType === "herbal" && fav.herbal) {
         return {
           id: fav.herbal.id,
           name: fav.herbal.name,
           latinName: fav.herbal.latinName,
           category: fav.herbal.category,
           benefit: fav.herbal.description,
-          type: 'herbal' as const,
+          type: "herbal" as const,
           favoriteId: fav.id,
           createdAt: fav.createdAt.toISOString(),
         };
       }
 
-      // ✅ FIX: Return ALL fields needed by FavoriteNote type
-      if (fav.itemType === 'note' && fav.note) {
+      if (fav.itemType === "note" && fav.note) {
         return {
           id: fav.note.id,
           title: fav.note.title,
           category: fav.note.category,
           specialty: fav.note.specialty,
           content: fav.note.content,
-          type: 'note' as const,
+          type: "note" as const,
           favoriteId: fav.id,
           createdAt: fav.createdAt.toISOString(),
         };
       }
 
       return null;
-    });
+    }).filter(Boolean);
 
-    return NextResponse.json(formatted.filter(Boolean));
+    return NextResponse.json(formatted);
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: 'Gagal memuat favorit' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch favorites" }, { status: 500 });
   }
 }
 
