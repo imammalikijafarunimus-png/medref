@@ -321,9 +321,15 @@ export default function DrugDetailPage() {
                       : <Copy className="h-3 w-3 text-muted-foreground" />}
                   </button>
                 </div>
-                <Link href={`/calculator?drugId=${drug.id}`} className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5">
-                  Kalkulator dosis <ExternalLink className="h-2.5 w-2.5" />
-                </Link>
+                <Link 
+  href={{
+    pathname: '/calculator',
+    query: { drugId: drug.id }
+  }} 
+  className="text-[11px] text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium transition-colors"
+>
+  Kalkulator dosis <ExternalLink className="h-2.5 w-2.5" />
+</Link>
               </div>
             )}
             {/* Max dose */}
@@ -682,13 +688,17 @@ function DoseBlock({
             : <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />}
         </button>
       </div>
-      {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
-      {link && (
-        <Link href={link} className="mt-1.5 text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5">
-          {linkLabel} <ExternalLink className="h-2.5 w-2.5" />
-        </Link>
-      )}
-    </div>
+  {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
+  {link && (
+    /* Gunakan 'as any' untuk memberi tahu TypeScript bahwa string dari variabel 'link' adalah rute yang valid */
+    <Link 
+      href={link as any} 
+      className="mt-1.5 text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5"
+    >
+      {linkLabel} <ExternalLink className="h-2.5 w-2.5" />
+    </Link>
+  )}
+</div>
   );
 }
 

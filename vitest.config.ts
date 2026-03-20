@@ -9,7 +9,7 @@ export default defineConfig({
     environment: 'jsdom',
     
     // Setup files to run before tests
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./src/test/setup.tsx'],
     
     // Global test utilities
     globals: true,
