@@ -1,594 +1,113 @@
-import { HerbalSeedData } from '../../types';
+models:
+  # -------------------------
+  # OPENROUTER (DeepSeek, Qwen)
+  # -------------------------
+  - name: 🧠 DeepSeek V3 (OpenRouter)
+    provider: openrouter
+    model: deepseek/deepseek-chat-v3-0324:free
+    apiKey: sk-or-xxx
+    apiBase: https://openrouter.ai/api/v1
+    contextLength: 64000
 
-/**
- * Data Herbal - Kategori Respirasi
- * Enterprise-Grade Medical Database
- * 
- * Catatan: Semua nama senyawa menggunakan standar internasional
- * Bahasa konsisten: Indonesia untuk deskripsi, English untuk istilah teknis
- */
-export const respiratoryHerbals: HerbalSeedData[] = [
-  // ==================== THYME (TIMI) ====================
-  {
-    id: 'resp-thyme',
-    name: 'Timi',
-    latinName: 'Thymus vulgaris',
-    commonNames: 'Thyme, Common Thyme, Garden Thyme, Tomillo',
-    localNames: 'Timi, Teh Herba',
-    plantFamily: 'Lamiaceae',
-    category: 'respiratory',
-    plantPart: 'Daun dan bagian aerial',
-    preparation: 'Teh, Ekstrak cair, Sirup, Minyak atsiri, Topikal',
-    traditionalUse: 'Pengobatan tradisional Eropa untuk batuk, bronkitis, dan infeksi saluran napas. Digunakan sejak zaman Yunani kuno.',
-    description: 'Herba aromatik dengan aktivitas antitusif, ekspektoran, dan antimikroba. Minyak atsiri mengandung senyawa aktif utama.',
-    safetyRating: 'aman',
-    pregnancySafety: 'Aman dalam dosis masakan. Hindari minyak atsiri dosis tinggi',
-    lactationSafety: 'Aman dalam dosis masakan',
-    pediatricSafety: 'Hindari minyak atsiri pada anak <2 tahun',
-    contraindications: 'Hipersensitivitas terhadap Lamiaceae. Hindari minyak atsiri murni secara oral.',
-    sideEffects: 'Reaksi alergi kulit pada individu sensitif. Irritasi mukosa dengan minyak atsiri tinggi.',
-    regulatoryStatus: {
-      BPOM: 'jamu',
-      FDA: 'GRAS',
-      EMA: 'traditional-herbal',
-    },
-    references: 'Borges RS, et al. Pharmacogn Rev. 2018;12(24):190-195',
-    notes: 'Karvakrol dan timol adalah komponen utama dengan aktivitas antimikroba kuat. Efek antispasmodik pada otot polos bronkus.',
-    compounds: [
-      {
-        compoundName: 'Carvacrol',
-        synonyms: 'Karvakrol, Cymophenol',
-        concentration: '20-50% minyak atsiri',
-        pharmacology: 'Antimikroba kuat, antiinflamasi, antispasmodik bronkus',
-        biologicalActivity: 'Aktif terhadap bakteri gram-positif dan jamur',
-      },
-      {
-        compoundName: 'Thymol',
-        synonyms: 'Timol, 2-Isopropyl-5-methylphenol',
-        concentration: '10-40% minyak atsiri',
-        pharmacology: 'Antiseptik, ekspektoran, antitusif, antispasmodik',
-        biologicalActivity: 'Meningkatkan sekresi mukus dan klirens mukosiliar',
-      },
-      {
-        compoundName: 'p-Cymene',
-        synonyms: 'Para-Cymene, 4-Isopropyltoluene',
-        concentration: '10-20% minyak atsiri',
-        pharmacology: 'Antiinflamasi, analgesik, antimikroba',
-      },
-      {
-        compoundName: 'Linalool',
-        synonyms: 'Linalol, 3,7-Dimethyl-1,6-octadien-3-ol',
-        concentration: '2-5%',
-        pharmacology: 'Sedatif ringan, ansiolitik, antispasmodik',
-      },
-      {
-        compoundName: 'Rosmarinic acid',
-        synonyms: 'Asam rosmarinat',
-        concentration: 'Dalam ekstrak daun',
-        pharmacology: 'Antioksidan kuat, antiinflamasi, antialergi',
-        notes: 'Kandungan lebih tinggi dalam ekstrak air',
-      },
-    ],
-    indications: [
-      {
-        indication: 'Batuk produktif',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT-double-blind',
-        dosage: 'Teh 1-2 g herbal kering 3-4x/hari',
-        duration: '5-7 hari',
-        notes: 'Efek ekspektoran membantu pengeluaran dahak',
-        studyPopulation: 'Dewasa dengan batuk akut',
-      },
-      {
-        indication: 'Bronkitis akut',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: 'Sirup timi 5-10 mL 3-4x/hari',
-        duration: '7-10 hari',
-        studyResults: 'Penurunan frekuensi dan keparahan batuk signifikan vs plasebo',
-      },
-      {
-        indication: 'Faringitis / Sakit tenggorokan',
-        evidenceLevel: 'tradisional',
-        studyType: 'tradisional',
-        dosage: 'Kumur teh timi hangat 3-4x/hari',
-        notes: 'Efek antimikroba lokal',
-      },
-      {
-        indication: 'Sinusitis (adjuvan)',
-        evidenceLevel: 'lemah',
-        studyType: 'observasi',
-        dosage: 'Inhalasi uap minyak atsiri 1-2x/hari',
-        notes: 'Membantu drainase mukus',
-      },
-    ],
-    interactions: [
-      {
-        interactingDrugId: 'drug-warfarin',
-        interactingDrugName: 'Warfarin',
-        interactionType: 'minor',
-        effect: 'Potensiasi efek antikoagulan (teoritis, minim dilaporkan)',
-        management: 'Monitor INR jika penggunaan jangka panjang',
-        evidenceLevel: 'lemah',
-      },
-    ],
-  },
+  - name: ⚡ Qwen 2.5 Coder 32B
+    provider: openrouter
+    model: qwen/qwen-2.5-coder-32b:free
+    apiKey: sk-or-xxx
+    apiBase: https://openrouter.ai/api/v1
+    contextLength: 64000
 
-  // ==================== LICORICE (AKAR MANIS) ====================
-  {
-    id: 'resp-licorice',
-    name: 'Akar Manis',
-    latinName: 'Glycyrrhiza glabra',
-    commonNames: 'Licorice, Liquorice, Sweet Root, Gan Cao',
-    localNames: 'Akar Manis, Akriman, Ontin',
-    plantFamily: 'Fabaceae',
-    category: 'respiratory',
-    plantPart: 'Akar dan stolon',
-    preparation: 'Teh, Ekstrak, Sirup, Deglycyrrhizinat (DGL)',
-    traditionalUse: 'Pengobatan TCM dan Ayurveda untuk batuk, sakit tenggorokan, dan asma. Salah satu herbal paling tua dalam sejarah.',
-    description: 'Akar dengan efek antitusif, ekspektoran, dan antiinflamasi. Glisirisin memberikan rasa manis alami.',
-    safetyRating: 'hati-hati',
-    pregnancySafety: 'Hindari',
-    lactationSafety: 'Hindari',
-    pediatricSafety: 'Hindari penggunaan jangka panjang',
-    contraindications: 'Hipertensi, gagal jantung, gangguan hati, hipokalemia, kehamilan.',
-    sideEffects: 'Pseudoaldosteronisme (retensi Na+, hipokalemia, hipertensi, edema) pada penggunaan >6 minggu. DGL bebas efek ini.',
-    regulatoryStatus: {
-      BPOM: 'jamu',
-      FDA: 'GRAS',
-      EMA: 'traditional-herbal',
-    },
-    references: 'Pastorino G, et al. Phytother Res. 2018;32(11):2121-2140',
-    notes: 'Penggunaan jangka pendek (<4-6 minggu) umumnya aman. DGL (deglycyrrhizinat) lebih aman untuk penggunaan lama.',
-    compounds: [
-      {
-        compoundName: 'Glycyrrhizin',
-        synonyms: 'Glisirisin, Glycyrrhizic acid',
-        concentration: '2-15%',
-        pharmacology: 'Antiinflamasi, antitusif, imunomodulator, antivirus',
-        notes: 'Penyebab pseudoaldosteronisme pada penggunaan kronis',
-      },
-      {
-        compoundName: 'Glycyrrhetinic acid',
-        synonyms: 'Asam glisirisetinat, Enoxolone',
-        concentration: 'Metabolit aktif glisirisin',
-        pharmacology: 'Antiinflamasi 100x lebih poten dari kortisol (topikal)',
-      },
-      {
-        compoundName: 'Liquiritin',
-        synonyms: 'Likiritin',
-        concentration: 'Flavonoid',
-        pharmacology: 'Antispasmodik, antioksidan, antitusif',
-      },
-      {
-        compoundName: 'Isoliquiritigenin',
-        synonyms: 'Isolikiritigenin',
-        concentration: 'Flavonoid',
-        pharmacology: 'Antispasmodik bronkus, antiinflamasi',
-      },
-    ],
-    indications: [
-      {
-        indication: 'Batuk kering',
-        evidenceLevel: 'kuat',
-        studyType: 'RCT-double-blind',
-        dosage: 'Teh 1-2 g akar kering 3x/hari atau sirup 5-10 mL',
-        duration: 'Maksimal 4-6 minggu tanpa pengawasan',
-        notes: 'Efek demulcent dan antitusif melalui modulasi SSP',
-      },
-      {
-        indication: 'Sakit tenggorokan / Faringitis',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: 'Kumur atau hisap lozenge 3-4x/hari',
-        notes: 'Efek antiinflamasi lokal dan demulcent',
-      },
-      {
-        indication: 'Bronkitis akut',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: 'Ekstrak standar sesuai label 3x/hari',
-        duration: '7-10 hari',
-      },
-      {
-        indication: 'Dyspepsia (DGL)',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: 'DGL 380-760 mg 3x/hari sebelum makan',
-        notes: 'DGL tanpa efek mineralokortikoid',
-      },
-    ],
-    interactions: [
-      {
-        interactingDrugId: 'drug-furosemide',
-        interactingDrugName: 'Furosemide',
-        interactionType: 'mayor',
-        effect: 'Hipokalemia berat, aritmia kardiak',
-        management: 'Hindari kombinasi atau monitor K+ ketat',
-        evidenceLevel: 'kuat',
-      },
-      {
-        interactingDrugId: 'drug-lisinopril',
-        interactingDrugName: 'Lisinopril / ACE Inhibitor',
-        interactionType: 'mayor',
-        effect: 'Penurunan efek antihipertensi, risiko hiperkalemia',
-        management: 'Hindari kombinasi atau monitor TD dan K+',
-        evidenceLevel: 'kuat',
-      },
-      {
-        interactingDrugId: 'drug-digoxin',
-        interactingDrugName: 'Digoxin',
-        interactionType: 'mayor',
-        effect: 'Toksisitas digoxin akibat hipokalemia',
-        management: 'Monitor K+ dan kadar digoxsin, hindari kombinasi',
-        evidenceLevel: 'kuat',
-      },
-      {
-        interactingDrugId: 'drug-warfarin',
-        interactingDrugName: 'Warfarin',
-        interactionType: 'moderat',
-        effect: 'Peningkatan INR',
-        management: 'Monitor INR',
-        evidenceLevel: 'moderat',
-      },
-      {
-        interactingDrugId: 'drug-prednisone',
-        interactingDrugName: 'Prednisone / Kortikosteroid',
-        interactionType: 'mayor',
-        effect: 'Potensiasi efek dan toksisitas kortikosteroid',
-        management: 'Hindari kombinasi, risiko edema dan hipertensi',
-        evidenceLevel: 'kuat',
-      },
-    ],
-  },
+  # -------------------------
+  # GROQ (super cepat)
+  # -------------------------
+  - name: 🚀 Groq Llama 3.3 70B
+    provider: groq
+    model: llama-3.3-70b-versatile
+    apiKey: gsk_xxx
+    contextLength: 128000
 
-  // ==================== IVY LEAF (DAUN IVY) ====================
-  {
-    id: 'resp-ivy',
-    name: 'Daun Ivy',
-    latinName: 'Hedera helix',
-    commonNames: 'English Ivy, Common Ivy',
-    localNames: 'Ivy, Tanaman Merambat',
-    plantFamily: 'Araliaceae',
-    category: 'respiratory',
-    plantPart: 'Daun',
-    preparation: 'Ekstrak cair, Sirup, Tablet, Tetes',
-    traditionalUse: 'Pengobatan tradisional Eropa untuk batuk dan gangguan pernapasan sejak abad ke-19.',
-    description: 'Herbal dengan saponin yang memiliki efek ekspektoran dan antispasmodik bronkus. Salah satu herbal batuk paling diteliti.',
-    safetyRating: 'aman',
-    pregnancySafety: 'Aman dalam dosis terapeutik',
-    lactationSafety: 'Aman dalam dosis terapeutik',
-    pediatricSafety: 'Aman untuk anak >2 tahun (sirup pediatrik tersedia)',
-    contraindications: 'Hipersensitivitas. Hindari buah (beracun).',
-    sideEffects: 'Gangguan GI ringan pada dosis tinggi. Reaksi alergi jarang.',
-    regulatoryStatus: {
-      BPOM: 'suplemen-kesehatan',
-      EMA: 'well-established-use',
-    },
-    references: 'Holzinger F, et al. Phytomedicine. 2020;69:153209',
-    notes: 'Di Jerman, sirup ivy adalah obat batuk OTC paling diresepkan untuk anak. Efek terlihat dalam 2-3 hari.',
-    compounds: [
-      {
-        compoundName: 'α-Hederin',
-        synonyms: 'Alpha-Hederin',
-        concentration: '3-6% saponin',
-        pharmacology: 'Ekspektoran, bronkodilatasi via beta-2 agonis indirekt',
-        biologicalActivity: 'Meningkatkan sekresi surfaktan dan klirens mukosiliar',
-      },
-      {
-        compoundName: 'Hederacoside C',
-        synonyms: 'Hederakosida C',
-        concentration: 'Saponin utama',
-        pharmacology: 'Antispasmodik bronkus, ekspektoran',
-      },
-      {
-        compoundName: 'Hederagenin',
-        synonyms: 'Hederagenin',
-        concentration: 'Aglikon saponin',
-        pharmacology: 'Antiinflamasi',
-      },
-    ],
-    indications: [
-      {
-        indication: 'Batuk produktif akut',
-        evidenceLevel: 'kuat',
-        studyType: 'meta-analysis',
-        dosage: 'Sirup 5-7.5 mL 2x/hari (dewasa); 2.5-5 mL 2x/hari (anak)',
-        duration: '7-14 hari',
-        studyResults: 'Pengurangan frekuensi batuk 50-70% vs baseline',
-        notes: 'Efektif untuk batuk dengan dahak sulit dikeluarkan',
-      },
-      {
-        indication: 'Bronkitis akut',
-        evidenceLevel: 'kuat',
-        studyType: 'RCT-double-blind',
-        dosage: 'Ekstrak kering 65-130 mg 2x/hari',
-        duration: '7-10 hari',
-        studyResults: 'Perbaikan gejala lebih cepat 2-3 hari vs plasebo',
-      },
-      {
-        indication: 'Bronkitis kronik (COPD)',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: 'Sirup atau ekstrak sesuai label',
-        duration: '4-8 minggu',
-        notes: 'Sebagai adjuvan terapi standar',
-      },
-    ],
-    interactions: [], // Tidak ada interaksi signifikan terdokumentasi
-  },
+  - name: ⚡ Groq Llama 3.1 8B Instant
+    provider: groq
+    model: llama-3.1-8b-instant
+    apiKey: gsk_xxx
+    contextLength: 128000
 
-  // ==================== PELARGONIUM (UMCKALOABO) ====================
-  {
-    id: 'resp-pelargonium',
-    name: 'Pelargonium',
-    latinName: 'Pelargonium sidoides',
-    commonNames: 'Umckaloabo, South African Geranium, African Geranium',
-    localNames: 'Geranium Afrika',
-    plantFamily: 'Geraniaceae',
-    category: 'respiratory',
-    plantPart: 'Akar',
-    preparation: 'Ekstrak cair (EPs 7630), Tablet, Sirup',
-    traditionalUse: 'Pengobatan tradisional Afrika Selatan untuk infeksi saluran napas. Diperkenalkan ke Eropa tahun 1897.',
-    description: 'Herbal dengan aktivitas antivirus, antibakteri, dan imunomodulasi. Ekstrak standar EPs 7630 paling banyak diteliti.',
-    safetyRating: 'aman',
-    pregnancySafety: 'Data terbatas, konsultasi dokter',
-    lactationSafety: 'Data terbatas',
-    pediatricSafety: 'Aman untuk anak >1 tahun (formulasi pediatrik)',
-    contraindications: 'Hipersensitivitas. Gangguan hati berat (teoritis).',
-    sideEffects: 'Gangguan GI ringan, sakit kepala, reaksi alergi kulit jarang.',
-    regulatoryStatus: {
-      EMA: 'well-established-use',
-      BPOM: 'suplemen-kesehatan',
-    },
-    references: 'Timmer A, et al. Cochrane Database Syst Rev. 2013;(10):CD006323',
-    notes: 'Salah satu herbal respirasi dengan bukti ilmiah terkuat. Populer di Jerman sebagai Umckaloabo.',
-    compounds: [
-      {
-        compoundName: 'Umckalin',
-        synonyms: 'Umkalin',
-        concentration: 'Coumarin',
-        pharmacology: 'Antibakteri, antivirus, imunomodulasi',
-      },
-      {
-        compoundName: 'Gallic acid derivatives',
-        synonyms: 'Derivat asam galat',
-        concentration: 'Polifenol',
-        pharmacology: 'Antioksidan, antiinflamasi, antimikroba',
-      },
-      {
-        compoundName: 'Proanthocyanidins',
-        synonyms: 'Proantosianidin',
-        concentration: 'Polimer flavonoid',
-        pharmacology: 'Antivirus (influenza, RSV), antiadhesi bakteri',
-        notes: 'Mencegah附着 bakteri pada epitel respirasi',
-      },
-    ],
-    indications: [
-      {
-        indication: 'Bronkitis akut',
-        evidenceLevel: 'kuat',
-        studyType: 'meta-analysis',
-        dosage: 'Ekstrak EPs 7630: 30-60 tetes atau 20-30 mL 3x/hari',
-        duration: '7 hari',
-        studyResults: 'Pengurangan durasi sakit 2 hari, perbaikan gejala 50% lebih cepat',
-        studyPopulation: 'Dewasa dan anak >1 tahun',
-      },
-      {
-        indication: 'Sinusitis akut',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT-double-blind',
-        dosage: '30-60 tetes 3x/hari',
-        duration: '7-14 hari',
-        notes: 'Sebagai adjuvan terapi standar',
-      },
-      {
-        indication: 'Tonsilitis akut / Faringitis',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: '20-30 mL sirup 3x/hari',
-        duration: '7 hari',
-      },
-      {
-        indication: 'Common cold',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: '30-60 tetes 3x/hari',
-        duration: '5-7 hari',
-        notes: 'Mengurangi keparahan dan durasi gejala',
-      },
-    ],
-    interactions: [
-      {
-        interactingDrugId: 'drug-warfarin',
-        interactingDrugName: 'Warfarin',
-        interactionType: 'minor',
-        effect: 'Potensiasi efek antikoagulan (teoritis)',
-        management: 'Monitor INR jika penggunaan bersamaan',
-        evidenceLevel: 'lemah',
-      },
-    ],
-  },
+  # -------------------------
+  # CEREBRAS (gunakan provider openai)
+  # -------------------------
+  - name: 💎 Cerebras Llama 3.1 8B
+    provider: openai
+    model: llama-3.1-8b
+    apiKey: csk_xxx
+    apiBase: https://api.cerebras.ai/v1
+    contextLength: 8000
 
-  // ==================== EUCALYPTUS ====================
-  {
-    id: 'resp-eucalyptus',
-    name: 'Eukaliptus',
-    latinName: 'Eucalyptus globulus',
-    commonNames: 'Eucalyptus, Blue Gum, Southern Blue Gum',
-    localNames: 'Eukaliptus, Kayu Putih (berbeda dari Melaleuca)',
-    plantFamily: 'Myrtaceae',
-    category: 'respiratory',
-    plantPart: 'Daun',
-    preparation: 'Minyak atsiri, Teh, Inhalasi, Topikal, Lozenge',
-    traditionalUse: 'Pengobatan tradisional Aborigin Australia dan obat folklorik untuk demam, batuk, dan asma.',
-    description: 'Pohon dengan minyak atsiri yang memiliki aktivitas ekspektoran, antiseptik, dan bronkodilatasi.',
-    safetyRating: 'aman',
-    pregnancySafety: 'Aman dalam dosis masakan. Hindari minyak atsiri dosis tinggi',
-    lactationSafety: 'Aman dalam dosis masakan',
-    pediatricSafety: 'Hindari minyak atsiri pada anak <2 tahun. Hindari aplikasi wajah pada anak <10 tahun.',
-    contraindications: 'Hindari minyak atsiri oral tanpa pengawasan. Kontraindikasi pada asma akut berat (risiko bronkospasme).',
-    sideEffects: 'Mual, muntah pada dosis tinggi oral. Bronkospasme pada asmatikus sensitif. Irritasi kulit dengan minyak murni.',
-    regulatoryStatus: {
-      BPOM: 'jamu',
-      FDA: 'GRAS',
-      EMA: 'traditional-herbal',
-    },
-    references: 'Sadlon AE, Lamson DW. Altern Med Rev. 2010;15(1):33-47',
-    notes: '1,8-cineole (eukaliptol) adalah komponen utama. Efek bronkodilatasi terbukti pada studi klinis.',
-    compounds: [
-      {
-        compoundName: '1,8-Cineole',
-        synonyms: 'Eukaliptol, Eucalyptol',
-        concentration: '70-90% minyak atsiri',
-        pharmacology: 'Bronkodilatasi, antiinflamasi, mukolitik, antitusif',
-        biologicalActivity: 'Meningkatkan klirens mukosiliar, menurunkan sitokin inflamasi',
-      },
-      {
-        compoundName: 'α-Pinene',
-        synonyms: 'Alfa-Pinen',
-        concentration: '5-10%',
-        pharmacology: 'Bronkodilatasi, antiinflamasi, antimikroba',
-      },
-      {
-        compoundName: 'Limonene',
-        synonyms: 'Limonen',
-        concentration: '1-5%',
-        pharmacology: 'Antiinflamasi, bronkodilatasi ringan',
-      },
-      {
-        compoundName: 'Globulol',
-        synonyms: 'Globulol',
-        concentration: 'Seskuiterpen',
-        pharmacology: 'Antimikroba',
-      },
-    ],
-    indications: [
-      {
-        indication: 'Batuk dan gangguan respirasi',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: 'Inhalasi uap 3-5 tetes minyak dalam air panas 2-3x/hari',
-        duration: 'Sesuai kebutuhan',
-        notes: 'Efek dekongestan dan ekspektoran',
-      },
-      {
-        indication: 'Bronkitis akut',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT-double-blind',
-        dosage: '200-400 mg eukaliptol oral 3x/hari',
-        duration: '7-10 hari',
-        studyResults: 'Penurunan frekuensi batuk dan sesak napas',
-      },
-      {
-        indication: 'Sinusitis',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: 'Lozenge dengan eukaliptol 4-6x/hari',
-        notes: 'Membantu drainase dan mengurangi kongesti',
-      },
-      {
-        indication: 'Asma (adjuvan)',
-        evidenceLevel: 'lemah',
-        studyType: 'RCT-kecil',
-        dosage: '200 mg eukaliptol 3x/hari',
-        notes: 'HATI-HATI: Dapat memicu bronkospasme pada sebagian pasien',
-      },
-      {
-        indication: 'Rinitis alergi',
-        evidenceLevel: 'moderat',
-        studyType: 'RCT',
-        dosage: 'Inhalasi atau oral sesuai formulasi',
-        notes: 'Mengurangi kongesti dan sekresi',
-      },
-    ],
-    interactions: [
-      {
-        interactingDrugId: 'drug-amitriptyline',
-        interactingDrugName: 'Amitriptyline / TCA',
-        interactionType: 'minor',
-        effect: 'Induksi enzim CYP, potensial penurunan kadar obat',
-        management: 'Monitor efikasi obat',
-        evidenceLevel: 'lemah',
-      },
-    ],
-  },
+  # -------------------------
+  # GOOGLE GEMINI API
+  # -------------------------
+  - name: 🌟 Gemini 1.5 Pro
+    provider: google
+    model: gemini-1.5-pro
+    apiKey: AIzaSyXXX
+    contextLength: 2000000
 
-  // ==================== ADHATODA (Vasaka) ====================
-  {
-    id: 'resp-adhatoda',
-    name: 'Adhatoda',
-    latinName: 'Adhatoda vasica (Justicia adhatoda)',
-    commonNames: 'Vasaka, Malabar Nut, Adulsa',
-    localNames: 'Jusicial, Daun Pecut Kuda',
-    plantFamily: 'Acanthaceae',
-    category: 'respiratory',
-    plantPart: 'Daun',
-    preparation: 'Teh, Ekstrak, Sirup, Serbuk',
-    traditionalUse: 'Pengobatan Ayurveda dan Unani untuk batuk, asma, dan bronkitis. Digunakan selama 2000+ tahun.',
-    description: 'Herma dengan alkaloid vasisin yang memiliki aktivitas bronkodilatasi dan ekspektoran. Digunakan dalam sirup batuk tradisional.',
-    safetyRating: 'hati-hati',
-    pregnancySafety: 'Hindari (efek oksitosik)',
-    lactationSafety: 'Hindari',
-    pediatricSafety: 'Hindari pada anak kecil',
-    contraindications: 'Kehamilan, menyusui, anak <12 tahun. Gangguan ginjal berat.',
-    sideEffects: 'Mual, muntah pada dosis tinggi. Irritasi GI.',
-    regulatoryStatus: {
-      BPOM: 'jamu',
-    },
-    references: 'Srinivasarao D, et al. Asian J Pharm Clin Res. 2018;11(10):17-22',
-    notes: 'Digunakan dalam formulasi Ayurveda seperti Sitopaladi Churna. Efek abortifacient pada dosis tinggi.',
-    compounds: [
-      {
-        compoundName: 'Vasicine',
-        synonyms: 'Peganine, Vasisin',
-        concentration: '0.5-1% alkaloid utama',
-        pharmacology: 'Bronkodilatasi, ekspektoran, uterotonik',
-        biologicalActivity: 'Meningkatkan sekresi mukus dan aktivitas silia',
-      },
-      {
-        compoundName: 'Vasicinone',
-        synonyms: 'Vasisinon',
-        concentration: 'Alkaloid',
-        pharmacology: 'Bronkodilatasi, antialergi',
-      },
-      {
-        compoundName: 'Vasicol',
-        synonyms: 'Vasikol',
-        concentration: 'Alkaloid minor',
-        pharmacology: 'Bronkodilatasi',
-      },
-      {
-        compoundName: 'Adhatodic acid',
-        synonyms: 'Asam adhatodat',
-        concentration: 'Asam organik',
-        pharmacology: 'Antimikroba',
-      },
-    ],
-    indications: [
-      {
-        indication: 'Batuk produktif',
-        evidenceLevel: 'tradisional',
-        studyType: 'tradisional',
-        dosage: 'Teh 1-2 g daun kering 2-3x/hari',
-        duration: 'Maksimal 7 hari',
-        notes: 'Lebih aman dalam formulasi kombinasi',
-      },
-      {
-        indication: 'Bronkitis akut',
-        evidenceLevel: 'lemah',
-        studyType: 'observasi',
-        dosage: 'Sirup sesuai label (formulasi kombinasi)',
-        notes: 'Sering dikombinasi dengan herbal lain',
-      },
-      {
-        indication: 'Asma bronkial (adjuvan)',
-        evidenceLevel: 'tradisional',
-        studyType: 'tradisional',
-        dosage: 'Ekstrak sesuai label',
-        notes: 'Efek bronkodilatasi, tapi hati-hati dengan potensi bronkospasme paradoksal',
-      },
-    ],
-    interactions: [], // Data interaksi terbatas
-  },
-];
+  - name: 🌟 Gemini 1.5 Flash
+    provider: google
+    model: gemini-1.5-flash
+    apiKey: AIzaSyXXX
+    contextLength: 1000000
+
+  - name: 🌟 Gemini 2.5 Flash Lite
+    provider: google
+    model: gemini-2.5-flash-lite
+    apiKey: AIzaSyXXX
+
+  # -------------------------
+  # OLLAMA (opsional local model)
+  # -------------------------
+  - name: 🖥️ Ollama: Llama 3.1 8B
+    provider: ollama
+    model: llama3.1:8b
+    apiBase: http://localhost:11434
+
+# TAB AUTOCOMPLETE
+tabAutocompleteModel:
+  name: 💎 Cerebras Llama 3.1 8B
+
+tabAutocompleteOptions:
+  maxTokens: 80
+  debounceDelay: 200
+
+embeddingsProvider:
+  provider: google
+  model: text-embedding-004
+  apiKey: AIzaSyXXX
+
+context:
+  - provider: code
+    params: { nLines: 100 }
+  - provider: docs
+  - provider: diff
+  - provider: terminal
+    params: { nLines: 30 }
+  - provider: problems
+  - provider: folder
+    params: { maxFiles: 15 }
+
+# COMMANDS
+slashCommands:
+  - name: explain
+    description: Jelaskan kode
+    prompt: "Jelaskan kode berikut:\n\n{{input}}"
+
+  - name: refactor
+    description: Refactor kode
+    prompt: "Refactor kode berikut:\n\n{{input}}"
+
+  - name: fix
+    description: Fix bug
+    prompt: "Perbaiki bug berikut:\n\n{{input}}"
+
+systemMessage: |
+  Kamu adalah AI programmer senior.
+  Selalu pakai Bahasa Indonesia.
+  Jelaskan reasoning setiap langkah.
