@@ -1,722 +1,667 @@
-'use client';
-
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  Heart,
-  Pill,
-  AlertTriangle,
-  Activity,
+import { db } from '@/lib/db';
+import { trackView } from '@/lib/actions/track';
+
+// Force dynamic rendering to prevent build-time database access
+export const dynamic = 'force-dynamic';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { FavoriteButton } from '@/components/favorite-button'; // <-- TAMBAHKAN INI
+import { 
+  ArrowLeft, 
+  Pill, 
+  AlertTriangle, 
+  Clock, 
   Baby,
   Shield,
   Info,
-  Zap,
-  Clock,
-  FlaskConical,
+  Share2, // Heart sudah dihapus karena pindah ke komponen sendiri
+  FileText,
+  Droplets,
   Thermometer,
-  ChevronDown,
-  ChevronUp,
-  Copy,
-  Check,
-  ExternalLink,
+  Package,
+  AlertOctagon,
+  Activity,
+  BookOpen,
+  Microscope,
+  ClipboardList,
+  MessageSquare
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import type { Drug } from '@/types';
 
-// ── Local helper (replaces @/lib/helpers) ────────────────────────────────────
-function parseJson<T>(value: unknown, fallback: T): T {
-  if (Array.isArray(value)) return value as T;
-  if (typeof value !== 'string') return fallback;
-  try { return JSON.parse(value) as T; } catch { return fallback; }
+// Warna interaksi
+const warnaInteraksi: Record<string, string> = {
+  mayor: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  major: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  moderat: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  moderate: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  minor: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400',
+};
+
+// Warna kehamilan
+const warnaKehamilan: Record<string, { bg: string; label: string }> = {
+  a: { bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', label: 'A - Aman' },
+  b: { bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', label: 'B - Kemungkinan Aman' },
+  c: { bg: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', label: 'C - Hati-hati' },
+  d: { bg: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', label: 'D - Berbahaya' },
+  x: { bg: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', label: 'X - Kontraindikasi' },
+  n: { bg: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400', label: 'N - Tidak Diketahui' },
+};
+
+// Label kategori obat
+const labelKategori: Record<string, string> = {
+  analgesic: 'Analgesik',
+  antibiotic: 'Antibiotik',
+  antiviral: 'Antiviral',
+  antifungal: 'Antijamur',
+  cardiovascular: 'Kardiovaskular',
+  diuretic: 'Diuretik',
+  anticoagulant: 'Antikoagulan',
+  antiarrhythmic: 'Antiarritmia',
+  'lipid-lowering': 'Penurun Lipid',
+  antianginal: 'Antiangina',
+  endocrine: 'Endokrin',
+  respiratory: 'Respirasi',
+  neurology: 'Neurologi',
+  psychiatry: 'Psikiatri',
+  gastrointestinal: 'Gastrointestinal',
+  dermatology: 'Dermatologi',
+  antimigraine: 'Antimigrain',
+  antigout: 'Antigout',
+  antihistamine: 'Antihistamin',
+  antidiabetic: 'Antidiabetes',
+  thyroid: 'Tiroid',
+  corticosteroid: 'Kortikosteroid',
+  urology: 'Urologi',
+  gynecology: 'Ginekologi',
+  'vitamin-supplement': 'Vitamin & Suplemen',
+  'otc-general': 'Obat Bebas',
+};
+
+// Parse brand names from comma-separated string
+function parseBrandNames(brandNames: string | null): string[] {
+  if (!brandNames) return [];
+  return brandNames.split(',').map(b => b.trim()).filter(Boolean);
 }
 
-// ── Pregnancy category color map ─────────────────────────────────────────────
-const pregnancyCatConfig: Record<string, { label: string; color: string }> = {
-  a: { label: 'Cat A', color: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400' },
-  b: { label: 'Cat B', color: 'bg-blue-500/10 text-blue-700 border-blue-500/20 dark:text-blue-400' },
-  c: { label: 'Cat C', color: 'bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400' },
-  d: { label: 'Cat D', color: 'bg-orange-500/10 text-orange-700 border-orange-500/20 dark:text-orange-400' },
-  x: { label: 'Cat X', color: 'bg-red-500/10 text-red-700 border-red-500/20 dark:text-red-400' },
-};
-
-const interactionSeverityConfig: Record<string, { label: string; dot: string; border: string; bg: string }> = {
-  major:    { label: 'Major',    dot: 'bg-red-500',    border: 'border-red-200 dark:border-red-900',    bg: 'bg-red-50/50 dark:bg-red-950/20' },
-  moderate: { label: 'Moderate', dot: 'bg-amber-500',  border: 'border-amber-200 dark:border-amber-900', bg: 'bg-amber-50/50 dark:bg-amber-950/20' },
-  minor:    { label: 'Minor',    dot: 'bg-blue-400',   border: 'border-blue-200 dark:border-blue-900',   bg: 'bg-blue-50/50 dark:bg-blue-950/20' },
-};
-
-export default function DrugDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const drugId = params.id as string;
-
-  const [drug, setDrug] = useState<Drug | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [favoriteId, setFavoriteId] = useState<string | null>(null);
-  const [favoriteLoading, setFavoriteLoading] = useState(false);
-  const [copiedDose, setCopiedDose] = useState<string | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['dose-0']));
-
-  // ── Fetch drug + favorite status ──────────────────────────────────────────
-  useEffect(() => {
-    async function fetchAll() {
-      try {
-        const [drugRes, favRes] = await Promise.all([
-          fetch(`/api/drugs/${drugId}`),
-          fetch(`/api/favorites/${drugId}?itemType=drug`),
-        ]);
-
-        const drugData = await drugRes.json();
-        if (drugData.success) {
-          setDrug(drugData.data);
-        } else {
-          toast.error('Obat tidak ditemukan');
-          router.push('/drugs');
-          return;
-        }
-
-        if (favRes.ok) {
-          const favData = await favRes.json();
-          setIsFavorite(favData.isFavorite);
-          setFavoriteId(favData.favoriteId);
-        }
-      } catch (error) {
-        console.error('Error fetching drug:', error);
-        toast.error('Gagal memuat data obat');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchAll();
-  }, [drugId, router]);
-
-  // ── ✅ FIX: Favorite toggle hits real API ─────────────────────────────────
-  const handleFavoriteClick = useCallback(async () => {
-    if (favoriteLoading) return;
-    setFavoriteLoading(true);
-
+// Parse regulatory status
+function parseRegulatoryStatus(str: string | null): { BPOM?: string; FDA?: string; JKN?: string } | null {
+  if (!str) return null;
+  if (str.startsWith('{')) {
     try {
-      if (isFavorite && favoriteId) {
-        // Remove from favorites
-        const res = await fetch(`/api/favorites/${favoriteId}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Delete failed');
-        setIsFavorite(false);
-        setFavoriteId(null);
-        toast.success(`${drug?.name} dihapus dari favorit`);
-      } else {
-        // Add to favorites
-        const res = await fetch('/api/favorites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itemId: drugId, itemType: 'drug' }),
-        });
-        if (!res.ok) throw new Error('Post failed');
-        const data = await res.json();
-        setIsFavorite(true);
-        setFavoriteId(data.id || data.favoriteId);
-        toast.success(`${drug?.name} ditambahkan ke favorit`);
-      }
+      return JSON.parse(str);
     } catch {
-      toast.error('Gagal mengubah favorit');
-    } finally {
-      setFavoriteLoading(false);
+      return null;
     }
-  }, [isFavorite, favoriteId, favoriteLoading, drug?.name, drugId]);
+  }
+  return null;
+}
 
-  // ── Copy dose to clipboard ────────────────────────────────────────────────
-  const handleCopyDose = useCallback(async (text: string, key: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedDose(key);
-    toast.success('Dosis disalin');
-    setTimeout(() => setCopiedDose(null), 2000);
-  }, []);
+// Get label for regulatory status
+function getRegulatoryLabel(status: string): string {
+  const labels: Record<string, string> = {
+    'obat-keras': 'Obat Keras',
+    'obat-bebas': 'Obat Bebas',
+    'obat-bebas-terbatas': 'Obat Bebas Terbatas',
+    'fitofarmaka': 'Fitofarmaka',
+    'jamu': 'Jamu',
+    'approved': 'FDA Approved',
+    'formularium': 'JKN Formularium',
+    'non-formularium': 'Non-Formularium JKN',
+  };
+  return labels[status] || status;
+}
 
-  const toggleSection = useCallback((key: string) => {
-    setExpandedSections((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  }, []);
+async function getDrug(id: string) {
+  const drug = await db.drug.findUnique({
+    where: { id },
+    include: {
+      doses: {
+        orderBy: { createdAt: 'asc' },
+      },
+      indications: {
+        orderBy: { priority: 'desc' },
+      },
+      contraindications: {
+        orderBy: { severity: 'asc' },
+      },
+      interactions: {
+        include: {
+          interactingDrug: {
+            select: { id: true, name: true, genericName: true },
+          },
+        },
+        orderBy: { interactionType: 'asc' },
+      },
+    },
+  });
 
-  // ── Loading skeleton ──────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 animate-in fade-in duration-300">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-lg" />
-          <Skeleton className="h-5 w-32" />
-        </div>
-        <div className="rounded-2xl border border-border/60 p-5 space-y-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-32" />
-          <div className="flex gap-2">
-            {[60, 80, 56].map((w, i) => (
-              <Skeleton key={i} className="h-6 rounded-full" style={{ width: w }} />
-            ))}
-          </div>
-        </div>
-        <Skeleton className="h-24 w-full rounded-2xl" />
-        <div className="grid grid-cols-2 gap-3">
-          <Skeleton className="h-20 rounded-xl" />
-          <Skeleton className="h-20 rounded-xl" />
-        </div>
-      </div>
-    );
+  return drug;
+}
+
+export default async function DrugDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const drug = await getDrug(id);
+
+  if (!drug) {
+    notFound();
   }
 
-  if (!drug) return null;
+  // Track view (fire-and-forget)
+  trackView('drug', id).catch(() => {});
 
-  const brandNames = parseJson<string[]>(drug.brandNames, []);
-  const pregnancyCat = drug.pregnancyCat?.toLowerCase();
-  const pregnancyConfig = pregnancyCat ? pregnancyCatConfig[pregnancyCat] : null;
-  const primaryDose = drug.doses?.[0];
+  const pregnancyInfo = drug.pregnancyCat 
+    ? warnaKehamilan[drug.pregnancyCat.toLowerCase()] 
+    : null;
+
+  const brandNamesList = parseBrandNames(drug.brandNames);
+  const regulatoryInfo = parseRegulatoryStatus(drug.regulatoryStatus);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-5 pb-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
+      {/* Back button */}
+      <Link
+        href="/drugs"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Kembali ke Daftar Obat</span>
+        <span className="sm:hidden">Kembali</span>
+      </Link>
 
-      {/* ── Back nav ─────────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 mb-5">
-        <Button variant="ghost" size="sm" asChild className="gap-1.5 -ml-2 text-muted-foreground hover:text-foreground">
-          <Link href="/drugs">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Daftar Obat
-          </Link>
-        </Button>
+      {/* Header */}
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="p-2.5 sm:p-3 rounded-xl bg-sky-50 dark:bg-sky-950/30 shrink-0">
+          <Pill className="h-6 w-6 sm:h-8 sm:w-8 text-sky-600 dark:text-sky-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold">{drug.name}</h1>
+              {drug.genericName && (
+                <p className="text-base sm:text-lg text-muted-foreground">{drug.genericName}</p>
+              )}
+            </div>
+            <div className="flex gap-1 shrink-0">
+              {/* <-- GANTI TOMBOL HEART LAMA DENGAN INI */}
+              <FavoriteButton itemId={drug.id} itemName={drug.name} itemType="drug" />
+              <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {drug.category && (
+              <Badge variant="default" className="text-xs">
+                {labelKategori[drug.category] || drug.category}
+              </Badge>
+            )}
+            {drug.drugClass && (
+              <Badge variant="secondary" className="text-xs">
+                {drug.drugClass}
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* ── Hero Header ──────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-border/60 bg-card p-5 mb-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3.5">
-            {/* Icon */}
-            <div className="mt-0.5 w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/15 flex items-center justify-center shrink-0">
-              <Pill className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight text-foreground leading-tight">
-                {drug.name}
-              </h1>
-              {drug.genericName && (
-                <p className="text-sm text-muted-foreground mt-0.5">{drug.genericName}</p>
-              )}
-
-              {/* Badges */}
-              <div className="flex flex-wrap gap-1.5 mt-2.5">
-                {drug.drugClass && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary/8 text-primary border border-primary/15">
-                    {drug.drugClass}
-                  </span>
-                )}
-                {drug.route && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground border border-border/60">
-                    {drug.route}
-                  </span>
-                )}
-                {pregnancyConfig && (
-                  <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border', pregnancyConfig.color)}>
-                    <Baby className="h-2.5 w-2.5" />
-                    {pregnancyConfig.label}
-                  </span>
-                )}
+      {/* Black Box Warning */}
+      {drug.blackBoxWarning && (
+        <Card className="border-black bg-black/5 dark:bg-black/20">
+          <CardContent className="p-4">
+            <div className="flex gap-3">
+              <AlertOctagon className="h-5 w-5 text-black dark:text-white shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-sm text-black dark:text-white mb-1">
+                  PERINGATAN KHUSUS (Black Box Warning)
+                </p>
+                <p className="text-sm text-black/80 dark:text-white/80 whitespace-pre-wrap">
+                  {drug.blackBoxWarning}
+                </p>
               </div>
             </div>
-          </div>
+          </CardContent>
+        </Card>
+      )}
 
-          {/* Favorite button */}
-          <button
-            onClick={handleFavoriteClick}
-            disabled={favoriteLoading}
-            className={cn(
-              'mt-0.5 w-9 h-9 rounded-xl border flex items-center justify-center transition-all duration-200 shrink-0',
-              'hover:scale-105 active:scale-95 disabled:opacity-50',
-              isFavorite
-                ? 'bg-rose-500/10 border-rose-500/25 text-rose-500'
-                : 'bg-muted/50 border-border/60 text-muted-foreground hover:text-rose-500 hover:border-rose-500/25 hover:bg-rose-500/8'
-            )}
-            aria-label={isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit'}
-          >
-            <Heart
-              className={cn('h-4 w-4 transition-all duration-200', isFavorite && 'fill-rose-500')}
-            />
-          </button>
-        </div>
+      {/* Description */}
+      {drug.description && (
+        <Card className="bg-sky-50/50 dark:bg-sky-950/20">
+          <CardContent className="p-4">
+            <p className="text-sm sm:text-base">{drug.description}</p>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Brand names */}
-        {brandNames.length > 0 && (
-          <div className="mt-3.5 pt-3.5 border-t border-border/40">
-            <p className="text-[11px] font-medium text-muted-foreground mb-1.5 uppercase tracking-wide">
+      {/* Brand Names */}
+      {brandNamesList.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Package className="h-4 w-4" />
               Nama Dagang
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {brandNames.map((name: string, i: number) => (
-                <span
-                  key={i}
-                  className="px-2 py-0.5 rounded-md text-xs font-medium bg-muted/60 text-foreground border border-border/40"
-                >
-                  {name}
-                </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <div className="flex flex-wrap gap-2">
+              {brandNamesList.map((brand, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {brand}
+                </Badge>
               ))}
             </div>
-          </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Regulatory Status */}
+      {regulatoryInfo && (
+        <Card>
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              Status Regulasi
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <div className="flex flex-wrap gap-2">
+              {regulatoryInfo.BPOM && (
+                <Badge variant="outline" className="text-xs">
+                  BPOM: {getRegulatoryLabel(regulatoryInfo.BPOM)}
+                </Badge>
+              )}
+              {regulatoryInfo.FDA && (
+                <Badge variant="outline" className="text-xs">
+                  {getRegulatoryLabel(regulatoryInfo.FDA)}
+                </Badge>
+              )}
+              {regulatoryInfo.JKN && (
+                <Badge variant="outline" className="text-xs">
+                  {getRegulatoryLabel(regulatoryInfo.JKN)}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Quick Info Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        {drug.route && (
+          <Card>
+            <CardContent className="p-2.5 sm:p-3 text-center">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Rute</p>
+              <p className="font-medium text-sm sm:text-base">{drug.route}</p>
+            </CardContent>
+          </Card>
+        )}
+        {drug.halfLife && (
+          <Card>
+            <CardContent className="p-2.5 sm:p-3 text-center">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Waktu Paruh</p>
+              <p className="font-medium text-sm sm:text-base">{drug.halfLife}</p>
+            </CardContent>
+          </Card>
+        )}
+        {pregnancyInfo && (
+          <Card>
+            <CardContent className="p-2.5 sm:p-3 text-center">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Kategori Hamil</p>
+              <Badge className={cn('mt-1 text-[10px] sm:text-xs', pregnancyInfo.bg)}>
+                {pregnancyInfo.label}
+              </Badge>
+            </CardContent>
+          </Card>
+        )}
+        {drug.lactation && (
+          <Card>
+            <CardContent className="p-2.5 sm:p-3 text-center">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Laktasi</p>
+              <p className="font-medium text-xs sm:text-sm">{drug.lactation}</p>
+            </CardContent>
+          </Card>
         )}
       </div>
 
-      {/* ── Quick Summary Card ───────────────────────────────────────────── */}
-      {primaryDose && (
-        <div className="rounded-2xl border border-blue-500/20 bg-blue-500/4 dark:bg-blue-950/20 p-4 mb-4">
-          <div className="flex items-center gap-1.5 mb-3">
-            <Zap className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-            <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
-              Ringkasan Klinis
-            </span>
-          </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {/* Indication */}
-            {primaryDose.indication && (
-              <div className="sm:col-span-3 pb-2 mb-1 border-b border-blue-500/10">
-                <p className="text-[11px] text-muted-foreground mb-0.5">Indikasi utama</p>
-                <p className="text-sm font-medium text-foreground">{primaryDose.indication}</p>
-              </div>
-            )}
-            {/* Adult dose */}
-            <div className="flex flex-col gap-0.5 group">
-              <p className="text-[11px] text-muted-foreground">Dosis dewasa</p>
-              <div className="flex items-center gap-1.5">
-                <p className="text-sm font-semibold text-foreground">{primaryDose.adultDose}</p>
-                <button
-                  onClick={() => handleCopyDose(primaryDose.adultDose, 'adult-quick')}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  {copiedDose === 'adult-quick'
-                    ? <Check className="h-3 w-3 text-emerald-500" />
-                    : <Copy className="h-3 w-3 text-muted-foreground" />}
-                </button>
-              </div>
-              {primaryDose.frequency && (
-                <p className="text-[11px] text-muted-foreground">{primaryDose.frequency}</p>
+      {/* Pharmacokinetics */}
+      {(drug.bioavailability || drug.proteinBinding || drug.metabolism || drug.excretion) && (
+        <Card>
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Microscope className="h-4 w-4" />
+              Farmakokinetik
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <div className="grid sm:grid-cols-2 gap-3">
+              {drug.bioavailability && (
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground">Bioavailabilitas</p>
+                  <p className="text-sm font-medium">{drug.bioavailability}</p>
+                </div>
+              )}
+              {drug.proteinBinding && (
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground">Ikatan Protein</p>
+                  <p className="text-sm font-medium">{drug.proteinBinding}</p>
+                </div>
+              )}
+              {drug.metabolism && (
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground">Metabolisme</p>
+                  <p className="text-sm font-medium">{drug.metabolism}</p>
+                </div>
+              )}
+              {drug.excretion && (
+                <div className="p-3 rounded-lg bg-muted/50">
+                  <p className="text-xs text-muted-foreground">Eksekresi</p>
+                  <p className="text-sm font-medium">{drug.excretion}</p>
+                </div>
               )}
             </div>
-            {/* Pediatric */}
-            {primaryDose.pediatricDose && (
-              <div className="flex flex-col gap-0.5 group">
-                <p className="text-[11px] text-muted-foreground">Dosis anak</p>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-semibold text-foreground">{primaryDose.pediatricDose}</p>
-                  <button
-                    onClick={() => handleCopyDose(primaryDose.pediatricDose!, 'ped-quick')}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    {copiedDose === 'ped-quick'
-                      ? <Check className="h-3 w-3 text-emerald-500" />
-                      : <Copy className="h-3 w-3 text-muted-foreground" />}
-                  </button>
-                </div>
-                <Link href={`/calculator?drugId=${drug.id}`} className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5">
-                  Kalkulator dosis <ExternalLink className="h-2.5 w-2.5" />
-                </Link>
-              </div>
-            )}
-            {/* Max dose */}
-            {primaryDose.maxDose && (
-              <div className="flex flex-col gap-0.5">
-                <p className="text-[11px] text-muted-foreground">Dosis maksimal</p>
-                <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                  {primaryDose.maxDose} {primaryDose.maxDoseUnit}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* ── Contraindications alert (always visible if exists) ───────────── */}
-      {drug.contraindications && drug.contraindications.length > 0 && (
-        <div className="rounded-2xl border border-red-500/25 bg-red-500/5 dark:bg-red-950/20 p-4 mb-4">
-          <div className="flex items-center gap-1.5 mb-2.5">
-            <Shield className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-            <span className="text-[11px] font-semibold text-red-700 dark:text-red-400 uppercase tracking-wider">
-              Kontraindikasi
-            </span>
-          </div>
-          <div className="space-y-1.5">
-            {drug.contraindications.map((contra, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-red-700 dark:text-red-300">{contra.contraindication}</p>
-                  {contra.severity === 'absolute' && (
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">
-                      Absolut
-                    </span>
-                  )}
-                  {contra.notes && (
-                    <p className="text-xs text-red-600/80 dark:text-red-400/80 mt-0.5">{contra.notes}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* Mechanism */}
+      {drug.mechanism && (
+        <Card>
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Mekanisme Kerja
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <p className="text-sm text-muted-foreground">{drug.mechanism}</p>
+          </CardContent>
+        </Card>
       )}
 
-      {/* ── Tabs ─────────────────────────────────────────────────────────── */}
-      <Tabs defaultValue="dosing">
-        <TabsList className="w-full grid grid-cols-4 h-9 p-0.5 mb-4">
-          <TabsTrigger value="dosing" className="text-xs gap-1">
-            <Activity className="h-3 w-3" />
-            Dosis
-          </TabsTrigger>
-          <TabsTrigger value="indications" className="text-xs gap-1">
-            <Shield className="h-3 w-3" />
-            Indikasi
-          </TabsTrigger>
-          <TabsTrigger value="interactions" className="text-xs gap-1">
-            <AlertTriangle className="h-3 w-3" />
-            Interaksi
-            {drug.interactions && drug.interactions.length > 0 && (
-              <span className="ml-0.5 px-1 py-0 rounded-full text-[9px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-semibold">
-                {drug.interactions.length}
-              </span>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="info" className="text-xs gap-1">
-            <Info className="h-3 w-3" />
-            Info
-          </TabsTrigger>
-        </TabsList>
+      {/* Storage */}
+      {drug.storage && (
+        <Card>
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Thermometer className="h-4 w-4" />
+              Penyimpanan
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <p className="text-sm text-muted-foreground">{drug.storage}</p>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* ── Dosing Tab ─────────────────────────────────────────────────── */}
-        <TabsContent value="dosing" className="space-y-3 mt-0">
-          {drug.doses && drug.doses.length > 0 ? drug.doses.map((dose, index) => {
-            const key = `dose-${index}`;
-            const isOpen = expandedSections.has(key);
-            return (
-              <div key={index} className="rounded-2xl border border-border/60 bg-card overflow-hidden">
-                {/* Dose header — always visible */}
-                <button
-                  onClick={() => toggleSection(key)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Activity className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground leading-tight">
-                        {dose.indication || 'Dosis Standar'}
-                      </p>
-                      {!isOpen && (
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-55">
-                          {dose.adultDose}
-                        </p>
-                      )}
-                    </div>
+      {/* Doses */}
+      {drug.doses.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Dosis
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 px-4 sm:px-6">
+            {drug.doses.map((dose, index) => (
+              <div key={dose.id}>
+                {index > 0 && <Separator className="my-4" />}
+                {dose.indication && (
+                  <p className="font-medium text-sm mb-2 text-primary">{dose.indication}</p>
+                )}
+                <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-muted-foreground text-xs">Dewasa:</p>
+                    <p className="font-medium">{dose.adultDose}</p>
                   </div>
-                  {isOpen
-                    ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
-                    : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
-                </button>
-
-                {/* Dose body */}
-                {isOpen && (
-                  <div className="px-4 pb-4 space-y-3 border-t border-border/40">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
-                      {/* Adult */}
-                      <DoseBlock
-                        label="Dosis Dewasa"
-                        value={dose.adultDose}
-                        sub={dose.frequency ?? undefined}
-                        onCopy={() => handleCopyDose(dose.adultDose, `adult-${index}`)}
-                        copied={copiedDose === `adult-${index}`}
-                        color="blue"
-                      />
-                      {/* Pediatric */}
-                      {dose.pediatricDose && (
-                        <DoseBlock
-                          label="Dosis Anak"
-                          value={dose.pediatricDose}
-                          sub={
-                            dose.pediatricMinAge || dose.pediatricMaxAge
-                              ? `Usia ${dose.pediatricMinAge ?? '0'}–${dose.pediatricMaxAge ?? '18'} tahun`
-                              : undefined
-                          }
-                          onCopy={() => handleCopyDose(dose.pediatricDose!, `ped-${index}`)}
-                          copied={copiedDose === `ped-${index}`}
-                          color="emerald"
-                          link={`/calculator?drugId=${drug.id}`}
-                          linkLabel="Kalkulator dosis"
-                        />
+                  {dose.pediatricDose && (
+                    <div className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-muted-foreground text-xs">Anak:</p>
+                      <p className="font-medium">{dose.pediatricDose}</p>
+                      {(dose.pediatricMinAge || dose.pediatricMaxAge) && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Usia: {dose.pediatricMinAge || '0'} - {dose.pediatricMaxAge || '18'} tahun
+                        </p>
                       )}
                     </div>
-
-                    {/* Max dose warning */}
-                    {dose.maxDose && (
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-orange-500/8 border border-orange-500/20">
-                        <AlertTriangle className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 shrink-0" />
-                        <p className="text-xs font-medium text-orange-700 dark:text-orange-400">
-                          Dosis maks: <span className="font-bold">{dose.maxDose} {dose.maxDoseUnit}</span>
-                        </p>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+                  {dose.maxDose && (
+                    <div className="p-2 rounded bg-orange-50 dark:bg-orange-950/30">
+                      <p className="text-[10px] text-orange-600 dark:text-orange-400">Dosis Maks</p>
+                      <p className="text-sm font-medium">{dose.maxDose} {dose.maxDoseUnit}</p>
+                    </div>
+                  )}
+                  {dose.frequency && (
+                    <div className="p-2 rounded bg-muted/50">
+                      <p className="text-[10px] text-muted-foreground">Frekuensi</p>
+                      <p className="text-sm font-medium">{dose.frequency}</p>
+                    </div>
+                  )}
+                  {dose.duration && (
+                    <div className="p-2 rounded bg-muted/50">
+                      <p className="text-[10px] text-muted-foreground">Durasi</p>
+                      <p className="text-sm font-medium">{dose.duration}</p>
+                    </div>
+                  )}
+                </div>
+                {(dose.renalAdjust || dose.hepaticAdjust) && (
+                  <div className="mt-3 space-y-2">
+                    {dose.renalAdjust && (
+                      <div className="p-2 rounded bg-amber-50 dark:bg-amber-950/30 text-xs">
+                        <span className="font-medium text-amber-700 dark:text-amber-400">Penyesuaian Ginjal:</span>{' '}
+                        <span className="text-amber-600 dark:text-amber-300">{dose.renalAdjust}</span>
                       </div>
                     )}
-
-                    {/* Adjustments */}
-                    {(dose.renalAdjust || dose.hepaticAdjust) && (
-                      <div className="grid sm:grid-cols-2 gap-2">
-                        {dose.renalAdjust && (
-                          <AdjustBlock icon="renal" label="Penyesuaian Renal" value={dose.renalAdjust} />
-                        )}
-                        {dose.hepaticAdjust && (
-                          <AdjustBlock icon="hepatic" label="Penyesuaian Hepatik" value={dose.hepaticAdjust} />
-                        )}
+                    {dose.hepaticAdjust && (
+                      <div className="p-2 rounded bg-amber-50 dark:bg-amber-950/30 text-xs">
+                        <span className="font-medium text-amber-700 dark:text-amber-400">Penyesuaian Hati:</span>{' '}
+                        <span className="text-amber-600 dark:text-amber-300">{dose.hepaticAdjust}</span>
                       </div>
-                    )}
-
-                    {dose.notes && (
-                      <p className="text-xs text-muted-foreground leading-relaxed px-1">{dose.notes}</p>
                     )}
                   </div>
                 )}
+                {dose.notes && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">{dose.notes}</p>
+                )}
               </div>
-            );
-          }) : (
-            <EmptySection message="Belum ada informasi dosis" />
-          )}
-        </TabsContent>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-        {/* ── Indications Tab ────────────────────────────────────────────── */}
-        <TabsContent value="indications" className="space-y-3 mt-0">
-          {drug.indications && drug.indications.length > 0 ? (
-            <div className="rounded-2xl border border-border/60 bg-card overflow-hidden">
-              {drug.indications.map((indication, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    'flex items-start justify-between p-4',
-                    index !== drug.indications!.length - 1 && 'border-b border-border/40'
-                  )}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <span className="text-[9px] font-bold text-primary">{index + 1}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{indication.indication}</p>
-                      {indication.icdCode && (
-                        <p className="text-xs text-muted-foreground mt-0.5">ICD-10: {indication.icdCode}</p>
-                      )}
-                      {indication.notes && (
-                        <p className="text-xs text-muted-foreground mt-1">{indication.notes}</p>
+      {/* Indications */}
+      {drug.indications.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Indikasi
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <div className="space-y-2">
+              {drug.indications.map((ind) => (
+                <div key={ind.id} className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm">{ind.indication}</p>
+                      {ind.isFdaApproved && (
+                        <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700">
+                          FDA Approved
+                        </Badge>
                       )}
                     </div>
+                    {ind.icdCode && (
+                      <p className="text-xs text-muted-foreground mt-1">ICD-10: {ind.icdCode}</p>
+                    )}
+                    {ind.notes && (
+                      <p className="text-xs text-muted-foreground mt-1">{ind.notes}</p>
+                    )}
                   </div>
-                  {indication.priority > 0 && (
-                    <span className="ml-2 shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
-                      P{indication.priority}
-                    </span>
+                  {ind.priority > 0 && (
+                    <Badge variant="outline" className="text-xs shrink-0 ml-2">
+                      Prioritas: {ind.priority}
+                    </Badge>
                   )}
                 </div>
               ))}
             </div>
-          ) : (
-            <EmptySection message="Belum ada data indikasi" />
-          )}
-        </TabsContent>
-
-        {/* ── Interactions Tab ───────────────────────────────────────────── */}
-        <TabsContent value="interactions" className="space-y-2 mt-0">
-          {drug.interactions && drug.interactions.length > 0 ? drug.interactions.map((interaction, index) => {
-            const sev = (interaction.interactionType || 'minor').toLowerCase();
-            const cfg = interactionSeverityConfig[sev] ?? interactionSeverityConfig.minor;
-            return (
-              <div
-                key={index}
-                className={cn('rounded-2xl border p-4', cfg.border, cfg.bg)}
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className={cn('w-2 h-2 rounded-full shrink-0', cfg.dot)} />
-                    <Link
-                      href={`/drugs/${interaction.interactingDrugId}`}
-                      className="text-sm font-semibold text-foreground hover:underline"
-                    >
-                      {interaction.interactingDrug?.name}
-                    </Link>
-                  </div>
-                  <span className={cn(
-                    'text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full',
-                    sev === 'major'    && 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                    sev === 'moderate' && 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-                    sev === 'minor'    && 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-                  )}>
-                    {cfg.label}
-                  </span>
-                </div>
-                {interaction.effect && (
-                  <p className="text-xs text-foreground/80 mb-2 leading-relaxed">{interaction.effect}</p>
-                )}
-                {interaction.management && (
-                  <div className="mt-2 pt-2 border-t border-border/30">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Manajemen · </span>
-                    <span className="text-xs text-muted-foreground">{interaction.management}</span>
-                  </div>
-                )}
-              </div>
-            );
-          }) : (
-            <EmptySection message="Tidak ada interaksi terdokumentasi" />
-          )}
-        </TabsContent>
-
-        {/* ── Info Tab ───────────────────────────────────────────────────── */}
-        <TabsContent value="info" className="space-y-3 mt-0">
-          {/* Mechanism */}
-          {drug.mechanism && (
-            <InfoBlock icon={<FlaskConical className="h-3.5 w-3.5" />} label="Mekanisme Kerja">
-              <p className="text-sm text-foreground/80 leading-relaxed">{drug.mechanism}</p>
-            </InfoBlock>
-          )}
-
-          {/* Pharmacokinetics grid */}
-          {(drug.halfLife || drug.excretion) && (
-            <div className="grid grid-cols-2 gap-3">
-              {drug.halfLife && (
-                <div className="rounded-xl border border-border/60 bg-card p-3">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Half-life</p>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">{drug.halfLife}</p>
-                </div>
-              )}
-              {drug.excretion && (
-                <div className="rounded-xl border border-border/60 bg-card p-3">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Activity className="h-3 w-3 text-muted-foreground" />
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Ekskresi</p>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">{drug.excretion}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Pregnancy & Lactation */}
-          {(drug.pregnancyCat || drug.lactation) && (
-            <div className="grid grid-cols-2 gap-3">
-              {drug.pregnancyCat && (
-                <div className="rounded-xl border border-border/60 bg-card p-3">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Baby className="h-3 w-3 text-muted-foreground" />
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Kehamilan</p>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">Kategori {drug.pregnancyCat.toUpperCase()}</p>
-                </div>
-              )}
-              {drug.lactation && (
-                <div className="rounded-xl border border-border/60 bg-card p-3">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Info className="h-3 w-3 text-muted-foreground" />
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Laktasi</p>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">{drug.lactation}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Storage */}
-          {drug.storage && (
-            <InfoBlock icon={<Thermometer className="h-3.5 w-3.5" />} label="Penyimpanan">
-              <p className="text-sm text-foreground/80">{drug.storage}</p>
-            </InfoBlock>
-          )}
-
-          {/* Notes */}
-          {drug.notes && (
-            <InfoBlock icon={<Info className="h-3.5 w-3.5" />} label="Catatan Tambahan">
-              <p className="text-sm text-foreground/80 leading-relaxed">{drug.notes}</p>
-            </InfoBlock>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
-
-// ── Reusable sub-components ───────────────────────────────────────────────────
-
-function DoseBlock({
-  label, value, sub, onCopy, copied, color, link, linkLabel,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  onCopy: () => void;
-  copied: boolean;
-  color: 'blue' | 'emerald';
-  link?: string;
-  linkLabel?: string;
-}) {
-  const colorMap = {
-    blue:    'bg-blue-500/8 border-blue-500/15',
-    emerald: 'bg-emerald-500/8 border-emerald-500/15',
-  };
-  return (
-    <div className={cn('rounded-xl border p-3 group', colorMap[color])}>
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">{label}</p>
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-bold text-foreground leading-snug">{value}</p>
-        <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
-          {copied
-            ? <Check className="h-3.5 w-3.5 text-emerald-500" />
-            : <Copy className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />}
-        </button>
-      </div>
-      {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
-      {link && (
-        <Link href={link} className="mt-1.5 text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5">
-          {linkLabel} <ExternalLink className="h-2.5 w-2.5" />
-        </Link>
+          </CardContent>
+        </Card>
       )}
-    </div>
-  );
-}
 
-function AdjustBlock({ icon, label, value }: { icon: 'renal' | 'hepatic'; label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">{label}</p>
-      <p className="text-xs text-foreground/80 leading-relaxed">{value}</p>
-    </div>
-  );
-}
+      {/* Contraindications */}
+      {drug.contraindications.length > 0 && (
+        <Card className="border-rose-200 dark:border-rose-900">
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2 text-rose-600 dark:text-rose-400">
+              <Shield className="h-4 w-4" />
+              Kontraindikasi
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <ul className="space-y-2">
+              {drug.contraindications.map((contra) => (
+                <li key={contra.id} className="flex items-start gap-2 text-sm">
+                  <span className={cn(
+                    'px-1.5 py-0.5 rounded text-[10px] sm:text-xs shrink-0 mt-0.5',
+                    contra.severity === 'absolut' || contra.severity === 'absolute'
+                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' 
+                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                  )}>
+                    {contra.severity || 'Relatif'}
+                  </span>
+                  <div className="flex-1">
+                    <span>{contra.contraindication}</span>
+                    {contra.notes && (
+                      <p className="text-xs text-muted-foreground mt-0.5">{contra.notes}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
-function InfoBlock({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4">
-      <div className="flex items-center gap-1.5 mb-2.5 text-muted-foreground">
-        {icon}
-        <span className="text-[10px] font-semibold uppercase tracking-wide">{label}</span>
-      </div>
-      {children}
-    </div>
-  );
-}
+      {/* Interactions */}
+      {drug.interactions.length > 0 && (
+        <Card className="border-amber-200 dark:border-amber-900">
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2 text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-4 w-4" />
+              Interaksi Obat ({drug.interactions.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <div className="space-y-3">
+              {drug.interactions.map((interaction) => (
+                <div 
+                  key={interaction.id} 
+                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
+                >
+                  <div className="flex flex-col gap-1">
+                    <Badge 
+                      className={cn(
+                        'capitalize shrink-0 text-[10px] sm:text-xs',
+                        warnaInteraksi[interaction.interactionType?.toLowerCase() || 'minor']
+                      )}
+                    >
+                      {interaction.interactionType || 'Minor'}
+                    </Badge>
+                    {interaction.evidenceLevel && (
+                      <Badge variant="outline" className="text-[10px]">
+                        {interaction.evidenceLevel}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/drugs/${interaction.interactingDrug.id}`}
+                      className="font-medium hover:underline text-sm sm:text-base"
+                    >
+                      {interaction.interactingDrug.name}
+                    </Link>
+                    {interaction.effect && (
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                        {interaction.effect}
+                      </p>
+                    )}
+                    {interaction.mechanism && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        <span className="font-medium">Mekanisme:</span> {interaction.mechanism}
+                      </p>
+                    )}
+                    {interaction.management && (
+                      <p className="text-xs sm:text-sm mt-1 p-2 rounded bg-amber-50 dark:bg-amber-950/30">
+                        <span className="font-medium text-amber-700 dark:text-amber-400">Penatalaksanaan:</span>{' '}
+                        <span className="text-amber-600 dark:text-amber-300">{interaction.management}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-function EmptySection({ message }: { message: string }) {
-  return (
-    <div className="rounded-2xl border border-border/60 bg-card py-10 text-center">
-      <p className="text-sm text-muted-foreground">{message}</p>
+      {/* Monitoring Parameters */}
+      {drug.monitoringParameters && (
+        <Card className="border-violet-200 dark:border-violet-900">
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2 text-violet-600 dark:text-violet-400">
+              <Activity className="h-4 w-4" />
+              Parameter Monitoring
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{drug.monitoringParameters}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Counseling Points */}
+      {drug.counselingPoints && (
+        <Card className="border-teal-200 dark:border-teal-900">
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2 text-teal-600 dark:text-teal-400">
+              <MessageSquare className="h-4 w-4" />
+              Edukasi Pasien
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{drug.counselingPoints}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Notes */}
+      {drug.notes && (
+        <Card>
+          <CardHeader className="pb-2 px-4 sm:px-6">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Catatan Klinis
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+              {drug.notes}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

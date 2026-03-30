@@ -1,126 +1,143 @@
-import { Search, Pill, Leaf, FileText, Heart, Activity, Construction } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+// src/components/medical/empty-states.tsx
+import React from 'react'
+import Link from 'next/link'
+import {
+  Package,
+  Search,
+  Leaf,
+  FileText,
+  Heart,
+  Activity,
+  Clock,
+} from 'lucide-react'
+
+// --- Types ---
+
+interface Action {
+  label: string
+  onClick?: () => void
+  href?: string
+}
 
 interface EmptyStateProps {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  action?: {
-    label: string;
-    href?: string;
-    onClick?: () => void;
-  };
-  className?: string;
+  icon: React.ComponentType<{ className?: string }>
+  title: string
+  description?: string
+  className?: string
+  action?: Action
 }
 
-export function EmptyState({ 
-  icon: Icon, 
-  title, 
-  description, 
+// --- Base Component ---
+
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  className = '',
   action,
-  className 
 }: EmptyStateProps) {
   return (
-    <div className={cn(
-      'flex flex-col items-center justify-center text-center p-8 min-h-[300px]',
-      className
-    )}>
-      <div className="p-4 rounded-full bg-muted/50 mb-4">
-        <Icon className="h-8 w-8 text-muted-foreground" />
+    <div className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}>
+      <div className="rounded-full bg-muted p-4 mb-4">
+        <Icon className="h-6 w-6 text-muted-foreground" />
       </div>
-      <h3 className="font-semibold text-lg">{title}</h3>
-      <p className="text-muted-foreground mt-1 max-w-sm">{description}</p>
+      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      {description && (
+        <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+          {description}
+        </p>
+      )}
       {action && (
-        <Button 
-          className="mt-4"
-          onClick={action.onClick}
-          {...(action.href ? { asChild: true } : {})}
-        >
+        <div className="mt-6">
           {action.href ? (
-            <a href={action.href}>{action.label}</a>
+            <Link
+              href={action.href}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              {action.label}
+            </Link>
           ) : (
-            action.label
+            <button
+              onClick={action.onClick}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              {action.label}
+            </button>
           )}
-        </Button>
+        </div>
       )}
     </div>
-  );
+  )
 }
 
-// Tidak ada hasil pencarian
+// --- Variants ---
+
 export function NoSearchResults({ query }: { query: string }) {
   return (
     <EmptyState
       icon={Search}
       title="Tidak Ada Hasil"
-      description={`Tidak ditemukan hasil untuk "${query}". Coba kata kunci lain atau periksa ejaan.`}
+      description={`Tidak ditemukan hasil untuk "${query}". Coba kata kunci lain.`}
     />
-  );
+  )
 }
 
-// Tidak ada obat
 export function EmptyDrugs() {
   return (
     <EmptyState
-      icon={Pill}
+      icon={Package}
       title="Belum Ada Obat"
-      description="Database obat masih kosong. Tambahkan obat pertama untuk memulai."
+      description="Mulai tambahkan data obat ke dalam sistem."
     />
-  );
+  )
 }
 
-// Tidak ada herbal
 export function EmptyHerbals() {
   return (
     <EmptyState
       icon={Leaf}
       title="Belum Ada Herbal"
-      description="Database herbal masih kosong. Tambahkan herbal pertama untuk memulai."
+      description="Mulai tambahkan data herbal ke dalam sistem."
     />
-  );
+  )
 }
 
-// Tidak ada catatan
 export function EmptyNotes() {
   return (
     <EmptyState
       icon={FileText}
       title="Belum Ada Catatan"
-      description="Belum ada catatan klinis. Buat catatan pertama untuk memulai."
+      description="Buat catatan pribadi atau profesional di sini."
     />
-  );
+  )
 }
 
-// Tidak ada favorit
 export function EmptyFavorites() {
   return (
     <EmptyState
       icon={Heart}
       title="Belum Ada Favorit"
-      description="Anda belum menyimpan item favorit. Klik ikon hati untuk menyimpan."
+      description="Simpan obat atau artikel favorit Anda di sini."
     />
-  );
+  )
 }
 
-// Tidak ada gejala
 export function EmptySymptoms() {
   return (
     <EmptyState
       icon={Activity}
       title="Belum Ada Gejala"
-      description="Database gejala masih kosong. Tambahkan gejala untuk memulai."
+      description="Tidak ada riwayat gejala yang tercatat."
     />
-  );
+  )
 }
 
-// Coming soon
 export function ComingSoon({ feature }: { feature: string }) {
   return (
     <EmptyState
-      icon={Construction}
+      icon={Clock}
       title="Segera Hadir"
-      description={`Fitur ${feature} sedang dalam pengembangan dan akan segera tersedia.`}
+      description={`Fitur ${feature} sedang dalam pengembangan.`}
     />
-  );
+  )
 }

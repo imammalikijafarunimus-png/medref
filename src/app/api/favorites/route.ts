@@ -1,83 +1,119 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { Prisma } from '@prisma/client';
 
-// GET /api/favorites
+// ✅ Strong typing untuk include relations
+type FavoriteWithRelations = Prisma.FavoriteGetPayload<{
+  include: {
+    drug: true;
+    herbal: true;
+    note: true;
+  };
+}>;
+
+// ==========================
+// GET FAVORITES
+// ==========================
 export async function GET(request: NextRequest) {
   try {
-    const userId = 'default-user';
+    const session = await getServerSession();
 
-    const favorites = await db.favorite.findMany({
-      where: { userId },
-      include: {
-        drug: true,
-        herbal: true,
-        note: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const formatted = favorites.map((fav) => {
-      // ✅ FIX: Return ALL fields needed by FavoriteDrug type — not just genericName/drugClass
-      if (fav.itemType === 'drug' && fav.drug) {
-        return {
-          id: fav.drug.id,
-          name: fav.drug.name,
-          genericName: fav.drug.genericName,
-          category: fav.drug.category,
-          drugClass: fav.drug.drugClass,
-          type: 'drug' as const,
-          favoriteId: fav.id,
-          createdAt: fav.createdAt.toISOString(),
-        };
-      }
+    const { searchParams } = new URL(request.url);
+    const itemType = searchParams.get('itemType') as
+      | 'drug'
+      | 'herbal'
+      | 'note'
+      | null;
 
-      // ✅ FIX: Return ALL fields needed by FavoriteHerbal type
-      if (fav.itemType === 'herbal' && fav.herbal) {
-        return {
-          id: fav.herbal.id,
-          name: fav.herbal.name,
-          latinName: fav.herbal.latinName,
-          category: fav.herbal.category,
-          benefit: fav.herbal.description,
-          type: 'herbal' as const,
-          favoriteId: fav.id,
-          createdAt: fav.createdAt.toISOString(),
-        };
-      }
+    const userId = session.user.id;
 
-      // ✅ FIX: Return ALL fields needed by FavoriteNote type
-      if (fav.itemType === 'note' && fav.note) {
-        return {
-          id: fav.note.id,
-          title: fav.note.title,
-          category: fav.note.category,
-          specialty: fav.note.specialty,
-          content: fav.note.content,
-          type: 'note' as const,
-          favoriteId: fav.id,
-          createdAt: fav.createdAt.toISOString(),
-        };
-      }
+    // ✅ Typed query result
+    const favorites: FavoriteWithRelations[] =
+      await db.favorite.findMany({
+        where: {
+          userId,
+          ...(itemType ? { itemType } : {}),
+        },
+        include: {
+          drug: true,
+          herbal: true,
+          note: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
 
-      return null;
-    });
+    // ✅ Fully typed mapping
+    const formatted = favorites
+      .map((fav) => {
+        if (fav.itemType === "drug" && fav.drug) {
+          return {
+            id: fav.drug.id,
+            name: fav.drug.name,
+            genericName: fav.drug.genericName,
+            type: "drug" as const,
+            favoriteId: fav.id,
+            createdAt: fav.createdAt.toISOString(),
+          };
+        }
 
-    return NextResponse.json(formatted.filter(Boolean));
+        if (fav.itemType === "herbal" && fav.herbal) {
+          return {
+            id: fav.herbal.id,
+            name: fav.herbal.name,
+            type: "herbal" as const,
+            favoriteId: fav.id,
+            createdAt: fav.createdAt.toISOString(),
+          };
+        }
+
+        if (fav.itemType === "note" && fav.note) {
+          return {
+            id: fav.note.id,
+            title: fav.note.title,
+            type: "note" as const,
+            favoriteId: fav.id,
+            createdAt: fav.createdAt.toISOString(),
+          };
+        }
+
+        return null;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    return NextResponse.json(formatted);
   } catch (error) {
-    console.error(error);
+    console.error("GET FAVORITES ERROR:", error);
+
     return NextResponse.json(
-      { error: 'Gagal memuat favorit' },
+      { error: "Failed to fetch favorites" },
       { status: 500 }
     );
   }
 }
 
-// POST /api/favorites
+// ==========================
+// ADD FAVORITE
+// ==========================
 export async function POST(request: NextRequest) {
   try {
-    const userId = 'default-user';
+    const session = await getServerSession();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
     const body = await request.json();
-    const { itemId, itemType } = body;
+
+    const { itemId, itemType } = body as {
+      itemId: string;
+      itemType: 'drug' | 'herbal' | 'note';
+    };
 
     if (!itemId || !itemType) {
       return NextResponse.json(
@@ -86,29 +122,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['drug', 'herbal', 'note'].includes(itemType)) {
-      return NextResponse.json(
-        { error: 'itemType tidak valid' },
-        { status: 400 }
-      );
-    }
-
-    // Check for existing favorite to avoid duplicates
+    // ✅ Optional: prevent duplicate favorites
     const existing = await db.favorite.findFirst({
       where: {
         userId,
         itemType,
-        drugId: itemType === 'drug' ? itemId : null,
-        herbalId: itemType === 'herbal' ? itemId : null,
-        noteId: itemType === 'note' ? itemId : null,
+        OR: [
+          { drugId: itemId },
+          { herbalId: itemId },
+          { noteId: itemId },
+        ],
       },
     });
 
     if (existing) {
-      return NextResponse.json({
-        isFavorite: true,
-        favoriteId: existing.id,
-      });
+      return NextResponse.json(
+        { error: 'Item sudah ada di favorit' },
+        { status: 409 }
+      );
     }
 
     const favorite = await db.favorite.create({
@@ -123,43 +154,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(favorite, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error("POST FAVORITE ERROR:", error);
+
     return NextResponse.json(
       { error: 'Gagal menambah favorit' },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/favorites?id=xxx
-export async function DELETE(request: NextRequest) {
-  try {
-    const userId = 'default-user';
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 });
-    }
-
-    // ✅ Verify ownership before deleting
-    const existing = await db.favorite.findFirst({
-      where: { id, userId },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Favorit tidak ditemukan' },
-        { status: 404 }
-      );
-    }
-
-    await db.favorite.delete({ where: { id } });
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: 'Gagal menghapus favorit' },
       { status: 500 }
     );
   }
